@@ -6,9 +6,9 @@ import Experience from './Experience.js'
 export default class Camera {
     constructor() {
         this.experience = new Experience()
-        this.sizes = this.experience.sizes
-        this.scene = this.experience.scene
-        this.canvas = this.experience.canvas
+        this.sizes      = this.experience.sizes
+        this.scene      = this.experience.scene
+        this.canvas     = this.experience.canvas
 
         this.setInstance()
         this.setControls()
@@ -17,46 +17,95 @@ export default class Camera {
 
     setInstance() {
         this.instance = new THREE.PerspectiveCamera(
-            45,
+            48,
             this.sizes.width / this.sizes.height,
             0.1,
-            100
+            120
         )
-        this.instance.position.set(0, 2.5, 7)
-        this.instance.lookAt(0, 0.5, 0)
+        this.instance.position.set(0, 2.5, 8)
+        this.instance.lookAt(0, 0.8, 0)
         this.scene.add(this.instance)
     }
 
     setControls() {
         this.controls = new OrbitControls(this.instance, this.canvas)
-        this.controls.enableDamping = true
-        this.controls.dampingFactor = 0.05
-        this.controls.target.set(0, 0.5, 0)
-        this.controls.enablePan = false
-        this.controls.minDistance = 3
-        this.controls.maxDistance = 12
-        this.controls.maxPolarAngle = Math.PI * 0.55
-        this.controls.minPolarAngle = Math.PI * 0.1
+        this.controls.enableDamping  = true
+        this.controls.dampingFactor  = 0.05
+        this.controls.target.set(0, 0.8, 0)
+        this.controls.enablePan      = false
+        this.controls.minDistance    = 2.5
+        this.controls.maxDistance    = 14
+        this.controls.maxPolarAngle  = Math.PI * 0.52
+        this.controls.minPolarAngle  = Math.PI * 0.08
     }
 
     setPositions() {
         this.positions = {
+            // ── Overview ──────────────────────────────
             default: {
-                position: new THREE.Vector3(0, 2.5, 7),
-                target: new THREE.Vector3(0, 0.5, 0)
+                position: new THREE.Vector3(0, 2.5, 8),
+                target:   new THREE.Vector3(0, 0.8, 0)
             },
+            // ── Back wall zones ───────────────────────
             menuBoard: {
-                position: new THREE.Vector3(0, 2.2, 2.5),
-                target: new THREE.Vector3(0, 1.8, -1.5)
+                position: new THREE.Vector3(0, 2.4, 2.6),
+                target:   new THREE.Vector3(0, 1.9, -1.8)
             },
             about: {
-                position: new THREE.Vector3(-4.5, 2.5, 2.5),
-                target: new THREE.Vector3(-3.5, 1.8, -1.5)
+                position: new THREE.Vector3(-5.0, 2.6, 2.2),
+                target:   new THREE.Vector3(-5.2, 2.0, -1.6)
+            },
+            research: {
+                position: new THREE.Vector3(5.0, 2.6, 2.2),
+                target:   new THREE.Vector3(5.2, 2.0, -1.6)
             },
             contact: {
-                position: new THREE.Vector3(4, 1.5, 2),
-                target: new THREE.Vector3(3.5, 0.9, -1.5)
-            }
+                position: new THREE.Vector3(5.0, 1.2, 2.0),
+                target:   new THREE.Vector3(5.2, 0.4, -1.6)
+            },
+            // ── Side walls ───────────────────────────
+            leftWall: {
+                position: new THREE.Vector3(-3.5, 2.4, 0.2),
+                target:   new THREE.Vector3(-5.5, 1.8, -1.5)
+            },
+            rightWall: {
+                position: new THREE.Vector3(3.5, 2.4, 0.2),
+                target:   new THREE.Vector3(5.5, 1.8, -1.5)
+            },
+            // ── Projects overview ────────────────────
+            projects: {
+                position: new THREE.Vector3(0, 2.4, 2.6),
+                target:   new THREE.Vector3(0, 1.9, -1.8)
+            },
+            // ── Individual project cups ───────────────
+            'project-dsa': {
+                position: new THREE.Vector3(-3.2, 1.6, 3.2),
+                target:   new THREE.Vector3(-3.2, 0.8, -0.2)
+            },
+            'project-nexus': {
+                position: new THREE.Vector3(-2.2, 1.6, 3.2),
+                target:   new THREE.Vector3(-2.2, 0.8, -0.2)
+            },
+            'project-sparsh': {
+                position: new THREE.Vector3(-1.2, 1.6, 3.2),
+                target:   new THREE.Vector3(-1.2, 0.8, -0.2)
+            },
+            'project-synth': {
+                position: new THREE.Vector3(-0.2, 1.6, 3.2),
+                target:   new THREE.Vector3(-0.2, 0.8, -0.2)
+            },
+            'project-vortex': {
+                position: new THREE.Vector3(0.8, 1.6, 3.2),
+                target:   new THREE.Vector3(0.8, 0.8, -0.2)
+            },
+            'project-rust': {
+                position: new THREE.Vector3(1.8, 1.6, 3.2),
+                target:   new THREE.Vector3(1.8, 0.8, -0.2)
+            },
+            'project-flux': {
+                position: new THREE.Vector3(2.8, 1.6, 3.2),
+                target:   new THREE.Vector3(2.8, 0.8, -0.2)
+            },
         }
     }
 

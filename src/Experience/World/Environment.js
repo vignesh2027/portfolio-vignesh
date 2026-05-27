@@ -4,86 +4,79 @@ import Experience from '../Experience.js'
 export default class Environment {
     constructor() {
         this.experience = new Experience()
-        this.scene = this.experience.scene
+        this.scene      = this.experience.scene
 
         this.setAmbientLight()
-        this.setSunLight()
-        this.setWindowLight()
+        this.setMoonLight()
         this.setLanternLights()
         this.setFog()
     }
 
     setAmbientLight() {
-        this.ambientLight = new THREE.AmbientLight(0xFFE8C8, 0.9)
+        // Very dim warm ambient — almost all light from lanterns
+        this.ambientLight = new THREE.AmbientLight(0xFFCCA0, 0.35)
         this.scene.add(this.ambientLight)
     }
 
-    setSunLight() {
-        // Warm late-afternoon sunlight from upper right
-        this.sunLight = new THREE.DirectionalLight(0xFFF0D0, 1.8)
-        this.sunLight.position.set(4, 8, 3)
-        this.sunLight.castShadow = true
-        this.sunLight.shadow.mapSize.set(2048, 2048)
-        this.sunLight.shadow.camera.near = 0.5
-        this.sunLight.shadow.camera.far = 25
-        this.sunLight.shadow.camera.left = -10
-        this.sunLight.shadow.camera.right = 10
-        this.sunLight.shadow.camera.top = 10
-        this.sunLight.shadow.camera.bottom = -10
-        this.sunLight.shadow.bias = -0.001
-        this.scene.add(this.sunLight)
+    setMoonLight() {
+        // Soft cool moonlight from upper-left (through window)
+        this.moonLight = new THREE.DirectionalLight(0xB0C8FF, 0.28)
+        this.moonLight.position.set(-6, 7, 2)
+        this.scene.add(this.moonLight)
 
-        // Soft fill from front
-        this.fillLight = new THREE.DirectionalLight(0xFFDDB0, 0.5)
-        this.fillLight.position.set(-3, 3, 6)
+        // Subtle fill from front so counter is readable
+        this.fillLight = new THREE.DirectionalLight(0xFF9040, 0.18)
+        this.fillLight.position.set(0, 3, 8)
         this.scene.add(this.fillLight)
     }
 
-    setWindowLight() {
-        // Warm window glow from left wall
-        this.windowLight = new THREE.PointLight(0xFFE0A0, 2.5, 5, 1.8)
-        this.windowLight.position.set(-5.2, 1.7, -1.0)
-        this.scene.add(this.windowLight)
-    }
-
     setLanternLights() {
+        // 5 lanterns matching TeaKadai lantern positions
         const defs = [
-            { x: -2.3, y: 2.4, z: 0.25, i: 2 },
-            { x:  0,   y: 2.6, z: 0.25, i: 2.8 },
-            { x:  2.3, y: 2.4, z: 0.25, i: 2 }
+            { x: -3.5, y: 2.48, z: 0.4,  i: 1.8,  color: 0xFF9010 },
+            { x: -1.5, y: 2.68, z: 0.2,  i: 2.4,  color: 0xFFAA20 },
+            { x:  0,   y: 2.82, z: -0.4, i: 3.0,  color: 0xFF8000 },
+            { x:  1.5, y: 2.68, z: 0.2,  i: 2.4,  color: 0xFFAA20 },
+            { x:  3.5, y: 2.48, z: 0.4,  i: 1.8,  color: 0xFF9010 },
         ]
 
         this.lanternLights = defs.map(d => {
-            const light = new THREE.PointLight(0xFF9010, d.i, 5.5, 1.6)
+            const light = new THREE.PointLight(d.color, d.i, 5.5, 1.6)
             light.position.set(d.x, d.y, d.z)
             light.castShadow = true
             light.shadow.mapSize.set(512, 512)
             light.shadow.camera.near = 0.1
-            light.shadow.camera.far = 7
+            light.shadow.camera.far  = 7
             this.scene.add(light)
-            return light
+            return { light, baseI: d.i }
         })
 
-        // Stove glow
-        this.stoveLight = new THREE.PointLight(0xFF5500, 1.2, 2.5, 2)
-        this.stoveLight.position.set(0, 0.9, 0.3)
+        // Stove glow — orange-red
+        this.stoveLight = new THREE.PointLight(0xFF4400, 1.4, 2.8, 2.2)
+        this.stoveLight.position.set(4.4, 0.9, 0.15)
         this.scene.add(this.stoveLight)
+
+        // Window moonlight glow (cool blue)
+        this.windowLight = new THREE.PointLight(0x6090FF, 0.55, 4.5, 2)
+        this.windowLight.position.set(-5.5, 2.0, -0.8)
+        this.scene.add(this.windowLight)
     }
 
     setFog() {
-        // Very subtle warm haze — not too dark
-        this.scene.fog = new THREE.FogExp2(0x1A0E05, 0.028)
+        // Warm dark haze — not too thick
+        this.scene.fog = new THREE.FogExp2(0x050203, 0.022)
     }
 
     update(elapsedTime) {
-        // Lantern flicker
-        this.lanternLights.forEach((l, i) => {
-            const base = i === 1 ? 2.8 : 2
-            l.intensity = base + Math.sin(elapsedTime * 2.3 + i * 1.7) * 0.18
-                        + Math.sin(elapsedTime * 5.1 + i) * 0.06
+        // Organic lantern flicker
+        this.lanternLights?.forEach(({ light, baseI }, i) => {
+            light.intensity = baseI
+                + Math.sin(elapsedTime * 2.1 + i * 1.8) * (baseI * 0.08)
+                + Math.sin(elapsedTime * 5.3 + i * 0.9) * (baseI * 0.03)
         })
+
         if (this.stoveLight) {
-            this.stoveLight.intensity = 1.2 + Math.sin(elapsedTime * 3.8) * 0.22
+            this.stoveLight.intensity = 1.4 + Math.sin(elapsedTime * 4.2) * 0.28
         }
     }
 }

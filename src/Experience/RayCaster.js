@@ -8,13 +8,13 @@ export default class RayCaster {
         this.camera     = this.experience.camera
         this.canvas     = this.experience.canvas
 
-        this.raycaster = new THREE.Raycaster()
-        this.mouse     = new THREE.Vector2()
-        this.hovered   = null
+        this.raycaster  = new THREE.Raycaster()
+        this.mouse      = new THREE.Vector2()
+        this.hovered    = null
 
-        this.canvas.addEventListener('mousemove',  e => this.onMouseMove(e))
-        this.canvas.addEventListener('click',      e => this.onClick(e))
-        this.canvas.addEventListener('touchend',   e => this.onTouchEnd(e), { passive: false })
+        this.canvas.addEventListener('mousemove', e => this.onMouseMove(e))
+        this.canvas.addEventListener('click',     e => this.onClick(e))
+        this.canvas.addEventListener('touchend',  e => this.onTouchEnd(e), { passive: false })
     }
 
     get controller() { return this.experience.controller }
@@ -32,11 +32,11 @@ export default class RayCaster {
     }
 
     onMouseMove(e) {
-        const hits = this.cast(e.clientX, e.clientY)
+        const hits  = this.cast(e.clientX, e.clientY)
         const isHit = hits.length > 0
+        const label = isHit ? (hits[0].object.userData.label || '') : ''
         this.hovered = isHit ? hits[0].object : null
-        this.controller?.setHovering(isHit)
-        document.body.style.cursor = isHit ? 'none' : 'none'
+        this.controller?.setHovering(isHit, label)
     }
 
     onClick(e) {
@@ -49,7 +49,7 @@ export default class RayCaster {
 
     onTouchEnd(e) {
         e.preventDefault()
-        const t = e.changedTouches[0]
+        const t    = e.changedTouches[0]
         const hits = this.cast(t.clientX, t.clientY)
         if (hits.length > 0) {
             const action = hits[0].object.userData.action
