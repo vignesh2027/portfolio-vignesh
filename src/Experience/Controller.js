@@ -21,8 +21,7 @@ const PROJECTS = {
         tech:  ['Three.js', 'WebGL', 'Firebase', 'Newsdata.io', 'Webz.io'],
         about: 'An immersive 3D universe dashboard that maps world events to cosmic bodies. News events become supernovae; trending topics orbit as planets. Built with Three.js WebGL and real-time news APIs.',
         links: [
-            { label: '▶ Explore Universe', href: 'http://localhost:8877' },
-            { label: '⌥ Source Code',      href: 'https://github.com/vignesh2027/cosmic-intelligence' },
+            { label: '⌥ Source Code', href: 'https://github.com/vignesh2027/cosmic-intelligence' },
         ],
         highlights: ['Real-time news as 3D events', 'Procedural galaxy generation', 'Firebase real-time sync', 'Particle storm animations'],
     },
@@ -107,7 +106,7 @@ const ABOUT_HTML = `
         </div>
 
         <h3>🎓 Education</h3>
-        <p class="ip-item">B.Tech Computer Science Engineering<br><span class="ip-sub">VIT Chennai · 2022 – 2026</span></p>
+        <p class="ip-item">B.Tech Computer Science Engineering<br><span class="ip-sub">Takshashila University · 2022 – 2026</span></p>
 
         <h3>🧠 Interests</h3>
         <div class="tag-row">
@@ -123,6 +122,7 @@ const ABOUT_HTML = `
         <a class="pd-link" href="https://github.com/vignesh2027" target="_blank">🐙 GitHub</a>
         <a class="pd-link" href="mailto:applemacbook6sep2004@gmail.com" target="_blank">📧 Email</a>
         <a class="pd-link" href="https://linkedin.com/in/vigneshwar-s" target="_blank">💼 LinkedIn</a>
+        <a class="pd-link" href="https://vignesh2027.github.io/portfolio-vignesh" target="_blank">🌐 Portfolio</a>
     </div>
 </div>`
 
@@ -171,10 +171,10 @@ const CONTACT_HTML = `
                 <span class="cc-label">LinkedIn</span>
                 <span class="cc-val">vigneshwar-s</span>
             </a>
-            <a class="contact-card" href="https://vignesh2027.github.io/synthron" target="_blank">
+            <a class="contact-card" href="https://vignesh2027.github.io/portfolio-vignesh" target="_blank">
                 <span class="cc-icon">🌐</span>
                 <span class="cc-label">Portfolio</span>
-                <span class="cc-val">View Projects</span>
+                <span class="cc-val">vignesh2027.github.io</span>
             </a>
         </div>
         <p style="color:rgba(255,245,224,0.5);font-style:italic;margin-top:28px;font-size:14px">

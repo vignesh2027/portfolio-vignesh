@@ -358,94 +358,81 @@ export default class TeaKadai {
     // ── 7 Project Cups ─────────────────────────────────
     buildProjectCups() {
         const projects = [
-            { name: 'Game of DSA',       short: 'DSA',       color: 0xD4A017, action: 'project-dsa'     },
-            { name: 'NEXUS Intelligence',short: 'NEXUS',     color: 0x2E6B9A, action: 'project-nexus'   },
-            { name: 'SparshCare',        short: 'SPARSH',    color: 0x8B2020, action: 'project-sparsh'  },
-            { name: 'SYNTHRON',          short: 'SYNTH',     color: 0x2A6B30, action: 'project-synth'   },
-            { name: 'VORTEXRAG',         short: 'VRTX',      color: 0x6B2A8B, action: 'project-vortex'  },
-            { name: 'rustkvd',           short: 'RUST',      color: 0xB04010, action: 'project-rust'    },
-            { name: 'FluxDB',            short: 'FLUX',      color: 0x2B608B, action: 'project-flux'    },
+            { name: 'Game of DSA',        emoji: '🎮', tech: ['C++', 'Raylib', 'WASM'],         color: 0xD4A017, action: 'project-dsa'    },
+            { name: 'NEXUS Intelligence', emoji: '🌌', tech: ['Three.js', 'WebGL', 'Firebase'],  color: 0x2E6B9A, action: 'project-nexus'  },
+            { name: 'SparshCare',         emoji: '🏥', tech: ['Flutter', 'Dart', 'Riverpod'],    color: 0x8B2020, action: 'project-sparsh' },
+            { name: 'SYNTHRON',           emoji: '🤖', tech: ['Python', 'LLM', 'Agents'],        color: 0x2A6B30, action: 'project-synth'  },
+            { name: 'VORTEXRAG',          emoji: '🌀', tech: ['Python', 'FAISS', 'RAG'],         color: 0x6B2A8B, action: 'project-vortex' },
+            { name: 'rustkvd',            emoji: '⚙',  tech: ['Rust', 'Raft', 'gRPC'],           color: 0xB04010, action: 'project-rust'   },
+            { name: 'FluxDB',             emoji: '📊', tech: ['Rust', 'Time-series', 'LSM'],     color: 0x2B608B, action: 'project-flux'   },
         ]
-
         const xs = [-3.2, -2.2, -1.2, -0.2, 0.8, 1.8, 2.8]
-
-        projects.forEach((proj, i) => {
-            const cup = this.buildLabeledCup(xs[i], 0.74, -0.3, proj.name, proj.color, proj.action)
+        projects.forEach((p, i) => {
+            const cup = this.buildLabeledCup(xs[i], 0.74, -0.3, p.name, p.emoji, p.tech, p.color, p.action)
             this.teaCups.push(cup)
         })
     }
 
-    buildLabeledCup(x, y, z, name, color, action) {
-        const group = new THREE.Group()
-
-        // Cup body with project color
+    buildLabeledCup(x, y, z, name, emoji, tech, color, action) {
+        const group  = new THREE.Group()
         const cupMat = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.1 })
+
         const body = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.076, 0.185, 20), cupMat)
         body.position.y = 0.092
         body.castShadow = true
         group.add(body)
 
-        // Tea liquid
-        const liquid = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.092, 0.092, 0.02, 20),
-            this.materials.teaLiquid
-        )
+        const liquid = new THREE.Mesh(new THREE.CylinderGeometry(0.092, 0.092, 0.02, 20), this.materials.teaLiquid)
         liquid.position.y = 0.174
         group.add(liquid)
 
-        // Saucer
-        const saucer = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.142, 0.138, 0.024, 20),
-            this.materials.teaCup
-        )
+        const saucer = new THREE.Mesh(new THREE.CylinderGeometry(0.142, 0.138, 0.024, 20), this.materials.teaCup)
         saucer.position.y = 0.012
         group.add(saucer)
 
-        // Handle
-        const handle = new THREE.Mesh(
-            new THREE.TorusGeometry(0.065, 0.015, 8, 14, Math.PI),
-            cupMat
-        )
+        const handle = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.015, 8, 14, Math.PI), cupMat)
         handle.rotation.y = Math.PI / 2
         handle.position.set(0.112, 0.11, 0)
         group.add(handle)
 
-        // Label plate in front of cup (small nameplate)
-        const labelTex = this.makeCanvasTexture(240, 72, (ctx, w, h) => {
-            ctx.fillStyle = '#1A0A00'
-            ctx.fillRect(0, 0, w, h)
-            ctx.strokeStyle = '#E8A020'
-            ctx.lineWidth = 2.5
-            ctx.strokeRect(3, 3, w - 6, h - 6)
-
-            const shortName = name.length > 11 ? name.substring(0, 10) + '…' : name
-            ctx.font = '700 22px Georgia, serif'
-            ctx.fillStyle = '#FFF5E0'
-            ctx.textAlign = 'center'
-            ctx.fillText(shortName, w / 2, 30)
-
-            ctx.font = '400 13px monospace'
-            ctx.fillStyle = 'rgba(232,160,32,0.65)'
-            ctx.fillText('[ click to view ]', w / 2, 56)
+        // Floating info card showing emoji, name, tech stack
+        const colorHex = '#' + color.toString(16).padStart(6, '0')
+        const cardTex = this.makeCanvasTexture(320, 128, (ctx, w, h) => {
+            ctx.fillStyle = 'rgba(12,5,0,0.94)'; ctx.fillRect(0, 0, w, h)
+            ctx.fillStyle = colorHex; ctx.fillRect(0, 0, w, 4)
+            ctx.strokeStyle = '#E8A020'; ctx.lineWidth = 1.5
+            ctx.strokeRect(4, 4, w - 8, h - 8)
+            ctx.font = '600 20px serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#FFF5E0'
+            ctx.fillText(emoji, 12, 34)
+            ctx.font = '700 18px Georgia, serif'
+            ctx.fillText(name.length > 15 ? name.substring(0, 14) + '…' : name, 42, 34)
+            ctx.font = '400 12px monospace'; ctx.fillStyle = 'rgba(232,160,32,0.85)'
+            ctx.fillText(tech.join(' · '), 12, 58)
+            ctx.strokeStyle = 'rgba(232,160,32,0.22)'; ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(12, 67); ctx.lineTo(w - 12, 67); ctx.stroke()
+            ctx.font = 'italic 11px sans-serif'; ctx.fillStyle = 'rgba(255,245,224,0.45)'
+            ctx.fillText('tap to explore project →', 12, 86)
+            ctx.font = '700 10px monospace'; ctx.fillStyle = 'rgba(80,220,80,0.8)'
+            ctx.fillText('● OPEN SOURCE', 12, 110)
         })
-        const label = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.52, 0.16),
-            new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.8 })
+        const card = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.68, 0.27),
+            new THREE.MeshStandardMaterial({ map: cardTex, roughness: 0.5, transparent: true, alphaTest: 0.01 })
         )
-        label.position.set(0, 0.1, 0.22)
-        group.add(label)
+        card.position.set(0, 0.44, 0.09)
+        card.rotation.x = -0.1
+        group.add(card)
 
         group.position.set(x, y, z)
         group.userData.action = action
         group.userData.label  = name
         this.scene.add(group)
 
-        // Make the cup body the click target (raycaster needs Mesh, not Group)
         const hitMesh = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.16, 0.16, 0.38, 16),
+            new THREE.CylinderGeometry(0.20, 0.20, 0.52, 12),
             new THREE.MeshStandardMaterial({ transparent: true, opacity: 0, depthWrite: false })
         )
-        hitMesh.position.set(x, y + 0.1, z)
+        hitMesh.position.set(x, y + 0.12, z)
         hitMesh.userData.action = action
         hitMesh.userData.label  = name
         this.scene.add(hitMesh)

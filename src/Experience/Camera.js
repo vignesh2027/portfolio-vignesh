@@ -17,13 +17,14 @@ export default class Camera {
 
     setInstance() {
         this.instance = new THREE.PerspectiveCamera(
-            48,
+            55,
             this.sizes.width / this.sizes.height,
             0.1,
             120
         )
-        this.instance.position.set(0, 2.5, 8)
-        this.instance.lookAt(0, 0.8, 0)
+        // Start INSIDE the kadai looking toward back wall
+        this.instance.position.set(0, 2.2, 3.5)
+        this.instance.lookAt(0, 1.5, -1.5)
         this.scene.add(this.instance)
     }
 
@@ -31,80 +32,84 @@ export default class Camera {
         this.controls = new OrbitControls(this.instance, this.canvas)
         this.controls.enableDamping  = true
         this.controls.dampingFactor  = 0.05
-        this.controls.target.set(0, 0.8, 0)
+        this.controls.target.set(0, 1.5, -1.5)
         this.controls.enablePan      = false
-        this.controls.minDistance    = 2.5
-        this.controls.maxDistance    = 14
-        this.controls.maxPolarAngle  = Math.PI * 0.52
-        this.controls.minPolarAngle  = Math.PI * 0.08
+        this.controls.minDistance    = 1.5
+        this.controls.maxDistance    = 9.0
+        this.controls.maxPolarAngle  = Math.PI * 0.54
+        this.controls.minPolarAngle  = Math.PI * 0.06
     }
 
     setPositions() {
         this.positions = {
-            // ── Overview ──────────────────────────────
+            // ── Default: standing inside, looking in ──────────
             default: {
-                position: new THREE.Vector3(0, 2.5, 8),
-                target:   new THREE.Vector3(0, 0.8, 0)
+                position: new THREE.Vector3(0, 2.2, 3.5),
+                target:   new THREE.Vector3(0, 1.5, -1.5)
             },
-            // ── Back wall zones ───────────────────────
+            // ── Back wall — chalkboard / menu ─────────────────
             menuBoard: {
-                position: new THREE.Vector3(0, 2.4, 2.6),
-                target:   new THREE.Vector3(0, 1.9, -1.8)
+                position: new THREE.Vector3(0, 2.5, -1.0),
+                target:   new THREE.Vector3(0, 2.2, -6.3)
             },
+            // ── Back wall — about frame ───────────────────────
             about: {
-                position: new THREE.Vector3(-5.0, 2.6, 2.2),
-                target:   new THREE.Vector3(-5.2, 2.0, -1.6)
+                position: new THREE.Vector3(-4.5, 2.6, -1.2),
+                target:   new THREE.Vector3(-5.8, 2.2, -6.3)
             },
+            // ── Back wall — research frame ────────────────────
             research: {
-                position: new THREE.Vector3(5.0, 2.6, 2.2),
-                target:   new THREE.Vector3(5.2, 2.0, -1.6)
+                position: new THREE.Vector3(4.5, 2.6, -1.2),
+                target:   new THREE.Vector3(5.8, 2.2, -6.3)
             },
+            // ── Back wall — contact sign ──────────────────────
             contact: {
-                position: new THREE.Vector3(5.0, 1.2, 2.0),
-                target:   new THREE.Vector3(5.2, 0.4, -1.6)
+                position: new THREE.Vector3(5.5, 1.4, -1.0),
+                target:   new THREE.Vector3(6.0, 0.8, -6.3)
             },
-            // ── Side walls ───────────────────────────
+            // ── Left wall — skills panel ──────────────────────
             leftWall: {
-                position: new THREE.Vector3(-3.5, 2.4, 0.2),
-                target:   new THREE.Vector3(-5.5, 1.8, -1.5)
+                position: new THREE.Vector3(-2.5, 2.4, -1.5),
+                target:   new THREE.Vector3(-7.8, 2.0, -2.5)
             },
+            // ── Right wall — GitHub panel ─────────────────────
             rightWall: {
-                position: new THREE.Vector3(3.5, 2.4, 0.2),
-                target:   new THREE.Vector3(5.5, 1.8, -1.5)
+                position: new THREE.Vector3(2.5, 2.4, -1.5),
+                target:   new THREE.Vector3(7.8, 2.0, -2.5)
             },
-            // ── Projects overview ────────────────────
+            // ── Projects overview ────────────────────────────
             projects: {
-                position: new THREE.Vector3(0, 2.4, 2.6),
-                target:   new THREE.Vector3(0, 1.9, -1.8)
+                position: new THREE.Vector3(0, 2.5, -1.0),
+                target:   new THREE.Vector3(0, 2.2, -6.3)
             },
-            // ── Individual project cups ───────────────
+            // ── Individual project cups at xs=[-3.2..-0.2..2.8]
             'project-dsa': {
-                position: new THREE.Vector3(-3.2, 1.6, 3.2),
-                target:   new THREE.Vector3(-3.2, 0.8, -0.2)
+                position: new THREE.Vector3(-3.2, 1.8, 2.2),
+                target:   new THREE.Vector3(-3.2, 0.8, -0.5)
             },
             'project-nexus': {
-                position: new THREE.Vector3(-2.2, 1.6, 3.2),
-                target:   new THREE.Vector3(-2.2, 0.8, -0.2)
+                position: new THREE.Vector3(-2.2, 1.8, 2.2),
+                target:   new THREE.Vector3(-2.2, 0.8, -0.5)
             },
             'project-sparsh': {
-                position: new THREE.Vector3(-1.2, 1.6, 3.2),
-                target:   new THREE.Vector3(-1.2, 0.8, -0.2)
+                position: new THREE.Vector3(-1.2, 1.8, 2.2),
+                target:   new THREE.Vector3(-1.2, 0.8, -0.5)
             },
             'project-synth': {
-                position: new THREE.Vector3(-0.2, 1.6, 3.2),
-                target:   new THREE.Vector3(-0.2, 0.8, -0.2)
+                position: new THREE.Vector3(-0.2, 1.8, 2.2),
+                target:   new THREE.Vector3(-0.2, 0.8, -0.5)
             },
             'project-vortex': {
-                position: new THREE.Vector3(0.8, 1.6, 3.2),
-                target:   new THREE.Vector3(0.8, 0.8, -0.2)
+                position: new THREE.Vector3(0.8, 1.8, 2.2),
+                target:   new THREE.Vector3(0.8, 0.8, -0.5)
             },
             'project-rust': {
-                position: new THREE.Vector3(1.8, 1.6, 3.2),
-                target:   new THREE.Vector3(1.8, 0.8, -0.2)
+                position: new THREE.Vector3(1.8, 1.8, 2.2),
+                target:   new THREE.Vector3(1.8, 0.8, -0.5)
             },
             'project-flux': {
-                position: new THREE.Vector3(2.8, 1.6, 3.2),
-                target:   new THREE.Vector3(2.8, 0.8, -0.2)
+                position: new THREE.Vector3(2.8, 1.8, 2.2),
+                target:   new THREE.Vector3(2.8, 0.8, -0.5)
             },
         }
     }
@@ -129,7 +134,7 @@ export default class Camera {
             duration,
             ease: 'power2.inOut',
             onComplete: () => {
-                if (name === 'default') this.controls.enabled = true
+                this.controls.enabled = true
             }
         })
     }

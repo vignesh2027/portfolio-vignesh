@@ -31,13 +31,13 @@ export default class Environment {
     }
 
     setLanternLights() {
-        // 5 lanterns matching TeaKadai lantern positions
+        // 5 lanterns matching TeaKadai.js buildLanterns() positions
         const defs = [
-            { x: -3.5, y: 2.48, z: 0.4,  i: 1.8,  color: 0xFF9010 },
-            { x: -1.5, y: 2.68, z: 0.2,  i: 2.4,  color: 0xFFAA20 },
-            { x:  0,   y: 2.82, z: -0.4, i: 3.0,  color: 0xFF8000 },
-            { x:  1.5, y: 2.68, z: 0.2,  i: 2.4,  color: 0xFFAA20 },
-            { x:  3.5, y: 2.48, z: 0.4,  i: 1.8,  color: 0xFF9010 },
+            { x: -4.0, y: 2.7, z:  1.5, i: 1.8, color: 0xFF9010 },
+            { x: -1.8, y: 2.9, z:  0.0, i: 2.4, color: 0xFFAA20 },
+            { x:  0.0, y: 3.1, z: -1.5, i: 3.0, color: 0xFF8000 },
+            { x:  1.8, y: 2.9, z:  0.0, i: 2.4, color: 0xFFAA20 },
+            { x:  4.0, y: 2.7, z:  1.5, i: 1.8, color: 0xFF9010 },
         ]
 
         this.lanternLights = defs.map(d => {
@@ -51,14 +51,14 @@ export default class Environment {
             return { light, baseI: d.i }
         })
 
-        // Stove glow — orange-red
-        this.stoveLight = new THREE.PointLight(0xFF4400, 1.4, 2.8, 2.2)
-        this.stoveLight.position.set(4.4, 0.9, 0.15)
+        // Stove glow — orange-red (stove at x≈5.5, z≈-1.5 in new room)
+        this.stoveLight = new THREE.PointLight(0xFF4400, 1.6, 3.2, 2.2)
+        this.stoveLight.position.set(5.5, 0.9, -1.5)
         this.scene.add(this.stoveLight)
 
-        // Window moonlight glow (cool blue)
-        this.windowLight = new THREE.PointLight(0x6090FF, 0.55, 4.5, 2)
-        this.windowLight.position.set(-5.5, 2.0, -0.8)
+        // Window moonlight glow — left wall at x=-8, z=1.5
+        this.windowLight = new THREE.PointLight(0x6090FF, 0.65, 5.0, 2)
+        this.windowLight.position.set(-6.5, 2.2, 1.5)
         this.scene.add(this.windowLight)
     }
 
