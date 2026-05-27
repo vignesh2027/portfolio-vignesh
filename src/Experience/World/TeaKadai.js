@@ -2,12 +2,14 @@ import * as THREE from 'three'
 import Experience from '../Experience.js'
 
 export default class TeaKadai {
-    constructor() {
+    constructor(materials) {
         this.experience = new Experience()
         this.scene = this.experience.scene
-        this.materials = this.experience.world.materials
+        this.materials = materials  // passed from World to avoid circular reference
 
         this.clickTargets = []
+        this.lanterns = []
+        this.teaCups = []
 
         this.buildScene()
         this.buildSignBoard()
@@ -29,239 +31,360 @@ export default class TeaKadai {
         return tex
     }
 
+    // ── Rounded rect helper for canvas ────────────────
+    roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath()
+        ctx.moveTo(x + r, y)
+        ctx.lineTo(x + w - r, y)
+        ctx.arcTo(x + w, y, x + w, y + r, r)
+        ctx.lineTo(x + w, y + h - r)
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+        ctx.lineTo(x + r, y + h)
+        ctx.arcTo(x, y + h, x, y + h - r, r)
+        ctx.lineTo(x, y + r)
+        ctx.arcTo(x, y, x + r, y, r)
+        ctx.closePath()
+    }
+
     // ── Main scene geometry ────────────────────────────
     buildScene() {
         const m = this.materials
 
-        // Floor
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), m.floor)
+        // Floor — warm stone tiles
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), m.floor)
         floor.rotation.x = -Math.PI / 2
         floor.position.y = -0.82
         floor.receiveShadow = true
         this.scene.add(floor)
 
         // Back wall
-        const wall = new THREE.Mesh(new THREE.PlaneGeometry(16, 8), m.plaster)
-        wall.position.set(0, 1.2, -2.8)
+        const wall = new THREE.Mesh(new THREE.PlaneGeometry(18, 9), m.plaster)
+        wall.position.set(0, 1.5, -3.0)
         wall.receiveShadow = true
         this.scene.add(wall)
 
-        // Side walls (partial)
-        const wallL = new THREE.Mesh(new THREE.PlaneGeometry(6, 8), m.plaster)
+        // Side walls
+        const wallL = new THREE.Mesh(new THREE.PlaneGeometry(7, 9), m.plaster)
         wallL.rotation.y = Math.PI / 2
-        wallL.position.set(-5.5, 1.2, -0.3)
+        wallL.position.set(-5.8, 1.5, -0.5)
         wallL.receiveShadow = true
         this.scene.add(wallL)
-
         const wallR = wallL.clone()
         wallR.rotation.y = -Math.PI / 2
-        wallR.position.set(5.5, 1.2, -0.3)
+        wallR.position.set(5.8, 1.5, -0.5)
         this.scene.add(wallR)
 
+        // Ceiling
+        const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(18, 9), m.ceiling)
+        ceiling.rotation.x = Math.PI / 2
+        ceiling.position.set(0, 4.3, -0.5)
+        this.scene.add(ceiling)
+
+        // Wall tile border strip at bottom
+        const tileStrip = new THREE.Mesh(
+            new THREE.PlaneGeometry(18, 0.6),
+            new THREE.MeshStandardMaterial({
+                map: this.makeCanvasTexture(900, 30, (ctx, w, h) => {
+                    const grad = ctx.createLinearGradient(0, 0, w, 0)
+                    grad.addColorStop(0, '#C47D0A')
+                    grad.addColorStop(0.5, '#E8A020')
+                    grad.addColorStop(1, '#C47D0A')
+                    ctx.fillStyle = grad
+                    ctx.fillRect(0, 0, w, h)
+                    for (let i = 0; i <= 30; i++) {
+                        ctx.strokeStyle = 'rgba(255,248,240,0.3)'
+                        ctx.lineWidth = 1
+                        ctx.beginPath()
+                        ctx.moveTo(i * 30, 0)
+                        ctx.lineTo(i * 30, h)
+                        ctx.stroke()
+                    }
+                }),
+                roughness: 0.6
+            })
+        )
+        tileStrip.position.set(0, -0.52, -2.98)
+        this.scene.add(tileStrip)
+
         // Counter base
-        const counterBase = new THREE.Mesh(new THREE.BoxGeometry(9, 1.5, 1.4), m.wood)
+        const counterBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 1.5, 1.5), m.wood)
         counterBase.position.set(0, -0.07, 0)
         counterBase.castShadow = true
         counterBase.receiveShadow = true
         this.scene.add(counterBase)
 
-        // Counter top
-        const counterTop = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.08, 1.6), m.lightWood)
-        counterTop.position.set(0, 0.69, 0)
+        // Counter top slab
+        const counterTop = new THREE.Mesh(new THREE.BoxGeometry(9.4, 0.09, 1.7), m.marble)
+        counterTop.position.set(0, 0.695, 0)
         counterTop.castShadow = true
         counterTop.receiveShadow = true
         this.scene.add(counterTop)
 
-        // Counter front trim
-        const trim = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.12, 0.06), m.darkWood)
-        trim.position.set(0, 0.65, 0.83)
-        this.scene.add(trim)
+        // Counter front carved panel
+        const panelMat = new THREE.MeshStandardMaterial({
+            color: 0x8B5E2E,
+            roughness: 0.7,
+            metalness: 0.05
+        })
+        const panelGeo = new THREE.BoxGeometry(0.9, 0.7, 0.04)
+        for (let i = -4; i <= 4; i++) {
+            if (i === 0) continue
+            const panel = new THREE.Mesh(panelGeo, panelMat)
+            panel.position.set(i * 1.0, 0.12, 0.77)
+            this.scene.add(panel)
+        }
 
-        // Roof beam
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 0.2), m.darkWood)
-        beam.position.set(0, 3.1, -0.6)
-        beam.castShadow = true
-        this.scene.add(beam)
+        // Arched top on counter panels
+        const archMat = new THREE.MeshStandardMaterial({ color: 0xC47D0A, roughness: 0.5, metalness: 0.2 })
+        for (let i = -4; i <= 4; i++) {
+            if (i === 0) continue
+            const arch = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 16, 1, false, 0, Math.PI), archMat)
+            arch.rotation.z = Math.PI / 2
+            arch.rotation.x = Math.PI / 2
+            arch.position.set(i * 1.0, 0.48, 0.77)
+            this.scene.add(arch)
+        }
 
-        const beam2 = beam.clone()
-        beam2.position.set(0, 3.1, 0.8)
-        this.scene.add(beam2)
-
-        // Left pillar
-        const pillarGeo = new THREE.CylinderGeometry(0.14, 0.16, 4, 8)
-        const pillarL = new THREE.Mesh(pillarGeo, m.darkWood)
-        pillarL.position.set(-4.5, 1.2, 0.8)
-        pillarL.castShadow = true
-        this.scene.add(pillarL)
-
-        const pillarR = pillarL.clone()
-        pillarR.position.set(4.5, 1.2, 0.8)
-        this.scene.add(pillarR)
-
-        // Canopy
-        const canopy = new THREE.Mesh(new THREE.PlaneGeometry(10.5, 2.5), this.materials.canopy)
-        canopy.rotation.x = -0.25
-        canopy.position.set(0, 3.3, 1.2)
+        // Roof / canopy
+        const canopy = new THREE.Mesh(new THREE.PlaneGeometry(11, 3), m.canopy)
+        canopy.rotation.x = -0.22
+        canopy.position.set(0, 3.5, 1.4)
         canopy.receiveShadow = true
         this.scene.add(canopy)
 
-        // Canopy stripe pattern
-        const stripeGeo = new THREE.PlaneGeometry(0.15, 2.5)
-        const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffe0a0, roughness: 1, side: THREE.DoubleSide })
-        for (let i = -5; i <= 5; i += 0.6) {
-            const stripe = new THREE.Mesh(stripeGeo, stripeMat)
-            stripe.rotation.x = -0.25
-            stripe.position.set(i, 3.31, 1.2)
+        // Canopy gold stripe trim
+        const trimMat = new THREE.MeshStandardMaterial({
+            color: 0xE8A020, emissive: 0xC47D0A, emissiveIntensity: 0.15,
+            roughness: 0.5, metalness: 0.3, side: THREE.DoubleSide
+        })
+        for (let i = -5.2; i <= 5.2; i += 0.55) {
+            const stripe = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 3), trimMat)
+            stripe.rotation.x = -0.22
+            stripe.position.set(i, 3.51, 1.4)
             this.scene.add(stripe)
         }
 
-        // Stove / grill on counter
-        const stoveBase = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.06, 0.9), this.materials.metal)
-        stoveBase.position.set(0, 0.73, 0.15)
+        // Canopy fringe
+        const fringeMat = new THREE.MeshStandardMaterial({ color: 0xF5DEB3, roughness: 0.9, side: THREE.DoubleSide })
+        for (let i = -5.1; i <= 5.1; i += 0.28) {
+            const fringe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.2, 0.01), fringeMat)
+            fringe.rotation.x = -0.22
+            fringe.position.set(i, 3.36, 2.6)
+            this.scene.add(fringe)
+        }
+
+        // Left & right pillars
+        const pillarGeo = new THREE.CylinderGeometry(0.13, 0.17, 4.3, 10)
+        const pillarL = new THREE.Mesh(pillarGeo, m.pillar)
+        pillarL.position.set(-4.6, 1.3, 0.85)
+        pillarL.castShadow = true
+        this.scene.add(pillarL)
+        const pillarR = pillarL.clone()
+        pillarR.position.set(4.6, 1.3, 0.85)
+        this.scene.add(pillarR)
+
+        // Pillar caps
+        const capGeo = new THREE.BoxGeometry(0.38, 0.18, 0.38)
+        ;[-4.6, 4.6].forEach(x => {
+            const cap = new THREE.Mesh(capGeo, archMat)
+            cap.position.set(x, 3.47, 0.85)
+            this.scene.add(cap)
+            const capBot = new THREE.Mesh(capGeo, archMat)
+            capBot.position.set(x, -0.78, 0.85)
+            this.scene.add(capBot)
+        })
+
+        // Wooden beams
+        const beamMat = m.darkWood
+        const beam1 = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.18, 0.22), beamMat)
+        beam1.position.set(0, 3.35, -0.55)
+        beam1.castShadow = true
+        this.scene.add(beam1)
+        const beam2 = beam1.clone()
+        beam2.position.set(0, 3.35, 0.8)
+        this.scene.add(beam2)
+
+        // Stove area
+        const stoveBase = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.07, 1.0), m.metal)
+        stoveBase.position.set(0, 0.735, 0.2)
         this.scene.add(stoveBase)
-
-        const stoveRing = new THREE.Mesh(
-            new THREE.TorusGeometry(0.3, 0.03, 8, 24),
-            this.materials.metal
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(0.32, 0.035, 8, 24), m.metal
         )
-        stoveRing.rotation.x = Math.PI / 2
-        stoveRing.position.set(0, 0.77, 0.15)
-        this.scene.add(stoveRing)
+        ring.rotation.x = Math.PI / 2
+        ring.position.set(0, 0.775, 0.2)
+        this.scene.add(ring)
 
-        // Kettle on stove
-        const kettleBody = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), m.metal)
-        kettleBody.position.set(0, 1.0, 0.15)
+        // Kettle
+        const kettleBody = new THREE.Mesh(new THREE.SphereGeometry(0.23, 18, 14), m.metal)
+        kettleBody.position.set(0, 1.02, 0.2)
         kettleBody.castShadow = true
         this.scene.add(kettleBody)
-
-        const kettleSpout = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.3, 8), m.metal)
-        kettleSpout.rotation.z = -Math.PI / 4
-        kettleSpout.position.set(0.28, 1.0, 0.15)
-        this.scene.add(kettleSpout)
-
-        const kettleLid = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), m.metal)
-        kettleLid.position.set(0, 1.25, 0.15)
-        this.scene.add(kettleLid)
-
-        const kettleHandle = new THREE.Mesh(
-            new THREE.TorusGeometry(0.14, 0.025, 8, 16, Math.PI),
-            m.darkWood
+        const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.045, 0.32, 8), m.metal)
+        spout.rotation.z = -Math.PI / 4.5
+        spout.position.set(0.3, 1.02, 0.2)
+        this.scene.add(spout)
+        const lid = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 8), m.metal)
+        lid.position.set(0, 1.28, 0.2)
+        this.scene.add(lid)
+        const handle = new THREE.Mesh(
+            new THREE.TorusGeometry(0.13, 0.024, 8, 16, Math.PI), m.darkWood
         )
-        kettleHandle.rotation.y = Math.PI / 2
-        kettleHandle.position.set(-0.24, 1.05, 0.15)
-        this.scene.add(kettleHandle)
+        handle.rotation.y = Math.PI / 2
+        handle.position.set(-0.24, 1.06, 0.2)
+        this.scene.add(handle)
 
-        // Tea cups on counter (4 cups, right side)
-        this.teaCups = []
-        const cupPositions = [-2.8, -1.8, 2.2, 3.2]
-        cupPositions.forEach(x => {
-            const group = this.buildTeaCup(x, 0.73, -0.25)
-            this.teaCups.push(group)
+        // Tea cups on counter
+        const cupXs = [-2.9, -1.9, 2.1, 3.1]
+        cupXs.forEach(x => {
+            this.teaCups.push(this.buildTeaCup(x, 0.74, -0.28))
         })
 
-        // Small jars/containers on counter left
-        this.buildJar(-3.6, 0.73, -0.2, 0.09, 0.25, 0x8b0000)
-        this.buildJar(-3.2, 0.73, -0.2, 0.07, 0.2, 0x2e8b57)
-        this.buildJar(-2.8, 0.73, -0.2, 0.08, 0.18, 0xd4a017)
-        this.buildJar(3.6, 0.73, -0.22, 0.07, 0.3, 0x654321)
-        this.buildJar(4.0, 0.73, -0.22, 0.065, 0.22, 0x8b4513)
+        // Jars left of stove
+        this.buildJar(-3.7, 0.74, -0.22, 0.09, 0.26, 0x8B0000)
+        this.buildJar(-3.3, 0.74, -0.22, 0.07, 0.21, 0x2E6B30)
+        this.buildJar(-2.9, 0.74, -0.22, 0.08, 0.19, 0xD4A017)
+        this.buildJar( 3.7, 0.74, -0.24, 0.07, 0.31, 0x5C2A00)
+        this.buildJar( 4.1, 0.74, -0.24, 0.065, 0.22, 0x8B4513)
 
-        // Shelf on back wall
-        const shelf = new THREE.Mesh(new THREE.BoxGeometry(4, 0.07, 0.35), m.lightWood)
-        shelf.position.set(2.5, 2.4, -2.6)
+        // Shelf on right wall
+        const shelf = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.07, 0.38), m.lightWood)
+        shelf.position.set(2.6, 2.5, -2.75)
         shelf.castShadow = true
         this.scene.add(shelf)
+        this.buildJar(1.8, 2.57, -2.6, 0.07, 0.22, 0x8B0000)
+        this.buildJar(2.1, 2.57, -2.6, 0.09, 0.18, 0xD4A017)
+        this.buildJar(2.4, 2.57, -2.6, 0.06, 0.26, 0x2E6B30)
+        this.buildJar(2.7, 2.57, -2.6, 0.08, 0.21, 0x5C2A00)
+        this.buildJar(3.0, 2.57, -2.6, 0.07, 0.18, 0x556B2F)
+        this.buildJar(3.3, 2.57, -2.6, 0.09, 0.23, 0x8B4513)
+        this.buildJar(3.6, 2.57, -2.6, 0.07, 0.2,  0xC47D0A)
+        this.buildJar(4.1, 2.57, -2.6, 0.08, 0.17, 0x7B3F00)
 
-        // Items on shelf
-        this.buildJar(1.8, 2.5, -2.5, 0.07, 0.22, 0x8b0000)
-        this.buildJar(2.1, 2.5, -2.5, 0.09, 0.18, 0xd4a017)
-        this.buildJar(2.4, 2.5, -2.5, 0.06, 0.25, 0x2e8b57)
-        this.buildJar(2.7, 2.5, -2.5, 0.08, 0.2, 0x654321)
-        this.buildJar(3.0, 2.5, -2.5, 0.07, 0.17, 0x556b2f)
-        this.buildJar(3.3, 2.5, -2.5, 0.09, 0.21, 0x8b4513)
+        // Small calendar/clock on wall (decorative)
+        const clockFace = new THREE.Mesh(
+            new THREE.CircleGeometry(0.28, 32),
+            new THREE.MeshStandardMaterial({
+                map: this.makeCanvasTexture(128, 128, (ctx, w, h) => {
+                    ctx.fillStyle = '#FFFAF5'
+                    ctx.arc(w/2, h/2, w/2, 0, Math.PI*2)
+                    ctx.fill()
+                    ctx.strokeStyle = '#C47D0A'
+                    ctx.lineWidth = 5
+                    ctx.stroke()
+                    // Hour markers
+                    for (let i = 0; i < 12; i++) {
+                        const a = (i / 12) * Math.PI * 2 - Math.PI / 2
+                        const r = 52
+                        ctx.beginPath()
+                        ctx.arc(w/2 + r * Math.cos(a), h/2 + r * Math.sin(a), i % 3 === 0 ? 4 : 2, 0, Math.PI*2)
+                        ctx.fillStyle = '#2A1A08'
+                        ctx.fill()
+                    }
+                    // Hands
+                    ctx.strokeStyle = '#2A1A08'
+                    ctx.lineWidth = 3
+                    ctx.beginPath()
+                    ctx.moveTo(w/2, h/2)
+                    ctx.lineTo(w/2, h/2 - 35)
+                    ctx.stroke()
+                    ctx.lineWidth = 2
+                    ctx.beginPath()
+                    ctx.moveTo(w/2, h/2)
+                    ctx.lineTo(w/2 + 28, h/2)
+                    ctx.stroke()
+                }),
+                roughness: 0.5
+            })
+        )
+        clockFace.position.set(-2.0, 2.8, -2.97)
+        this.scene.add(clockFace)
 
         // Hanging lanterns
-        this.lanterns = []
-        const lanternPositions = [
-            { x: -2.2, y: 2.4, z: 0.2 },
-            { x: 0,    y: 2.65, z: 0.2 },
-            { x: 2.2,  y: 2.4, z: 0.2 }
+        const lanternDefs = [
+            { x: -2.3, y: 2.45, z: 0.25, size: 0.28 },
+            { x: 0,    y: 2.7,  z: 0.25, size: 0.34 },
+            { x: 2.3,  y: 2.45, z: 0.25, size: 0.28 }
         ]
-        lanternPositions.forEach((pos, i) => {
-            const lantern = this.buildLantern(pos.x, pos.y, pos.z, i === 1 ? 0.32 : 0.26)
-            this.lanterns.push(lantern)
+        lanternDefs.forEach((def, i) => {
+            this.lanterns.push(this.buildLantern(def.x, def.y, def.z, def.size))
         })
 
-        // Hanging cord from beam to lantern
-        const cordMat = new THREE.MeshStandardMaterial({ color: 0x1a0e05 })
-        lanternPositions.forEach(pos => {
-            const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 3.1 - pos.y, 4), cordMat)
-            cord.position.set(pos.x, (3.1 + pos.y) / 2 + 0.05, pos.z)
+        // Hanging cords
+        const cordMat = new THREE.MeshStandardMaterial({ color: 0x3D1E08, roughness: 0.9 })
+        lanternDefs.forEach(def => {
+            const cordH = 3.35 - def.y - def.size
+            const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, cordH, 4), cordMat)
+            cord.position.set(def.x, 3.35 - cordH / 2, def.z)
             this.scene.add(cord)
         })
 
-        // Tamil-style tile border on counter front
-        const tileMat = new THREE.MeshStandardMaterial({ color: 0x7a3010, roughness: 0.8 })
-        for (let i = -4.3; i < 4.5; i += 0.4) {
-            const tile = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.36, 0.05), tileMat)
-            tile.position.set(i, 0.12, 0.84)
-            this.scene.add(tile)
-        }
-
-        // Chalk menu writing (decorative text on back wall)
-        const chalkDecor = new THREE.Mesh(
-            new THREE.PlaneGeometry(2.2, 0.5),
+        // Window on left wall — warm light glow rect
+        const windowFrame = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.6, 2.0),
             new THREE.MeshStandardMaterial({
-                map: this.makeCanvasTexture(440, 100, (ctx, w, h) => {
-                    ctx.fillStyle = 'transparent'
-                    ctx.clearRect(0, 0, w, h)
-                    ctx.font = 'bold 28px serif'
-                    ctx.fillStyle = 'rgba(245,222,179,0.45)'
-                    ctx.textAlign = 'center'
-                    ctx.fillText('★  கடை  ★', w / 2, 60)
-                }),
+                color: 0xFFF8E0,
+                emissive: 0xFFE090,
+                emissiveIntensity: 0.6,
                 transparent: true,
-                roughness: 1,
-                side: THREE.FrontSide
+                opacity: 0.85,
+                roughness: 0.1
             })
         )
-        chalkDecor.position.set(0, 0.5, -2.75)
-        this.scene.add(chalkDecor)
+        windowFrame.rotation.y = Math.PI / 2
+        windowFrame.position.set(-5.78, 1.6, -1.0)
+        this.scene.add(windowFrame)
+
+        const windowBorder = new THREE.Mesh(
+            new THREE.BoxGeometry(0.05, 2.1, 1.7), m.darkWood
+        )
+        windowBorder.rotation.y = Math.PI / 2
+        windowBorder.position.set(-5.76, 1.6, -1.0)
+        this.scene.add(windowBorder)
+
+        // Cross bars on window
+        const hBar = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.05, 1.6), m.darkWood)
+        hBar.rotation.y = Math.PI / 2
+        hBar.position.set(-5.75, 1.6, -1.0)
+        this.scene.add(hBar)
+        const vBar = new THREE.Mesh(new THREE.BoxGeometry(0.04, 2.0, 0.05), m.darkWood)
+        vBar.rotation.y = Math.PI / 2
+        vBar.position.set(-5.75, 1.6, -1.0)
+        this.scene.add(vBar)
     }
 
     buildTeaCup(x, y, z) {
         const group = new THREE.Group()
 
         const body = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.1, 0.075, 0.18, 20),
+            new THREE.CylinderGeometry(0.105, 0.08, 0.19, 22),
             this.materials.teaCup
         )
-        body.position.y = 0.09
+        body.position.y = 0.095
         body.castShadow = true
         group.add(body)
 
         const liquid = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.092, 0.092, 0.02, 20),
+            new THREE.CylinderGeometry(0.097, 0.097, 0.022, 22),
             this.materials.teaLiquid
         )
-        liquid.position.y = 0.17
+        liquid.position.y = 0.178
         group.add(liquid)
 
         const saucer = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.145, 0.14, 0.025, 20),
+            new THREE.CylinderGeometry(0.15, 0.145, 0.026, 22),
             this.materials.teaCup
         )
-        saucer.position.y = 0.012
+        saucer.position.y = 0.013
         saucer.castShadow = true
         group.add(saucer)
 
-        // Handle (torus arc)
         const handle = new THREE.Mesh(
-            new THREE.TorusGeometry(0.065, 0.015, 8, 12, Math.PI),
+            new THREE.TorusGeometry(0.068, 0.016, 8, 14, Math.PI),
             this.materials.teaCup
         )
         handle.rotation.y = Math.PI / 2
-        handle.position.set(0.115, 0.11, 0)
+        handle.position.set(0.118, 0.115, 0)
         group.add(handle)
 
         group.position.set(x, y, z)
@@ -270,181 +393,206 @@ export default class TeaKadai {
     }
 
     buildJar(x, y, z, r, h, color) {
-        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.05 })
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.9, h, 16), mat)
+        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.06 })
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.88, h, 18), mat)
         body.position.set(x, y + h / 2, z)
         body.castShadow = true
         this.scene.add(body)
-
-        const lid = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.05, r * 1.05, 0.025, 16),
-            new THREE.MeshStandardMaterial({ color: 0x1a0e05, roughness: 0.7, metalness: 0.3 }))
+        const lid = new THREE.Mesh(
+            new THREE.CylinderGeometry(r * 1.08, r * 1.08, 0.025, 18),
+            new THREE.MeshStandardMaterial({ color: 0x2A1A08, roughness: 0.6, metalness: 0.4 })
+        )
         lid.position.set(x, y + h + 0.012, z)
         this.scene.add(lid)
     }
 
     buildLantern(x, y, z, size) {
         const group = new THREE.Group()
-
-        // Lantern body
         const body = new THREE.Mesh(
-            new THREE.SphereGeometry(size, 12, 10),
+            new THREE.SphereGeometry(size, 14, 10),
             this.materials.lanternGlass
         )
         group.add(body)
-
-        // Lantern cap top & bottom
         const capMat = this.materials.lanternFrame
-        const capTop = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.3, size * 0.3, size * 0.2, 8), capMat)
-        capTop.position.y = size * 0.85
-        group.add(capTop)
-        const capBot = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.2, size * 0.15, size * 0.3, 8), capMat)
-        capBot.position.y = -size * 0.95
-        group.add(capBot)
-
-        // 4 vertical ribs
+        const capT = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.28, size * 0.28, size * 0.22, 8), capMat)
+        capT.position.y = size * 0.88
+        group.add(capT)
+        const capB = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.18, size * 0.13, size * 0.32, 8), capMat)
+        capB.position.y = -size * 0.96
+        group.add(capB)
         for (let i = 0; i < 4; i++) {
-            const rib = new THREE.Mesh(
-                new THREE.BoxGeometry(0.015, size * 2, 0.015),
-                capMat
-            )
+            const rib = new THREE.Mesh(new THREE.BoxGeometry(0.013, size * 2, 0.013), capMat)
             rib.rotation.y = (Math.PI / 2) * i
             group.add(rib)
         }
-
         group.position.set(x, y, z)
         this.scene.add(group)
         return group
     }
 
-    // ── Sign Board ─────────────────────────────────────
+    // ── Sign board ─────────────────────────────────────
     buildSignBoard() {
-        const tex = this.makeCanvasTexture(1024, 160, (ctx, w, h) => {
-            // Wood background
-            ctx.fillStyle = '#3d1e08'
+        // Wood backing panel
+        const backing = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.82, 0.09), this.materials.darkWood)
+        backing.position.set(0, 3.72, -0.55)
+        this.scene.add(backing)
+
+        const tex = this.makeCanvasTexture(1200, 164, (ctx, w, h) => {
+            // Rich wood gradient background
+            const grad = ctx.createLinearGradient(0, 0, w, 0)
+            grad.addColorStop(0,   '#2A1A08')
+            grad.addColorStop(0.3, '#3D2210')
+            grad.addColorStop(0.7, '#3D2210')
+            grad.addColorStop(1,   '#2A1A08')
+            ctx.fillStyle = grad
             ctx.fillRect(0, 0, w, h)
-            // Border
-            ctx.strokeStyle = '#e8a020'
-            ctx.lineWidth = 6
-            ctx.strokeRect(8, 8, w - 16, h - 16)
-            ctx.strokeStyle = '#c47d0a'
-            ctx.lineWidth = 2
+
+            // Gold border outer
+            ctx.strokeStyle = '#E8A020'
+            ctx.lineWidth = 5
+            ctx.strokeRect(6, 6, w - 12, h - 12)
+            // Gold border inner
+            ctx.strokeStyle = 'rgba(232,160,32,0.4)'
+            ctx.lineWidth = 1.5
             ctx.strokeRect(14, 14, w - 28, h - 28)
-            // Tamil text small
-            ctx.font = 'bold 22px serif'
-            ctx.fillStyle = '#c47d0a'
-            ctx.textAlign = 'center'
-            ctx.fillText('வி க்னேஷ்', w / 2, 46)
-            // Main English title
-            ctx.font = 'bold 62px "Georgia", serif'
-            ctx.fillStyle = '#f5deb3'
-            ctx.fillText("Vignesh's Tea Kadai", w / 2, 118)
-            // Decorative dots
-            for (let i = 0; i < 7; i++) {
+
+            // Corner ornaments
+            const corners = [[22, 22], [w-22, 22], [22, h-22], [w-22, h-22]]
+            corners.forEach(([cx, cy]) => {
                 ctx.beginPath()
-                ctx.arc(80 + i * 130, 140, 3, 0, Math.PI * 2)
-                ctx.fillStyle = '#e8a020'
+                ctx.arc(cx, cy, 6, 0, Math.PI * 2)
+                ctx.fillStyle = '#E8A020'
                 ctx.fill()
-            }
+            })
+
+            // Tamil subtitle
+            ctx.font = '700 24px serif'
+            ctx.fillStyle = '#C47D0A'
+            ctx.textAlign = 'center'
+            ctx.fillText('★  வி க்னேஷ்  ★', w / 2, 46)
+
+            // English title
+            ctx.font = '700 68px "Georgia", serif'
+            ctx.fillStyle = '#FFF5E0'
+            ctx.shadowColor = 'rgba(232,160,32,0.5)'
+            ctx.shadowBlur = 14
+            ctx.fillText("Vignesh's  Tea  Kadai", w / 2, 122)
+            ctx.shadowBlur = 0
         })
 
         const sign = new THREE.Mesh(
-            new THREE.BoxGeometry(5.5, 0.72, 0.06),
-            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.0 })
+            new THREE.PlaneGeometry(5.8, 0.76),
+            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, metalness: 0.05 })
         )
-        sign.position.set(0, 3.65, -0.5)
-        sign.castShadow = true
+        sign.position.set(0, 3.72, -0.51)
         this.scene.add(sign)
 
-        // Hanging wire
-        const wireMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7, roughness: 0.4 })
-        const wire1 = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.55, 4), wireMat)
-        wire1.position.set(-2.4, 3.9, -0.5)
-        this.scene.add(wire1)
-        const wire2 = wire1.clone()
-        wire2.position.set(2.4, 3.9, -0.5)
-        this.scene.add(wire2)
+        // Wire hangers
+        const wireMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7, roughness: 0.3 })
+        ;[-2.6, 2.6].forEach(x => {
+            const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.65, 4), wireMat)
+            wire.position.set(x, 4.0, -0.55)
+            this.scene.add(wire)
+        })
     }
 
     // ── Menu / Chalkboard ──────────────────────────────
     buildMenuBoard() {
-        // Board frame
-        const frame = new THREE.Mesh(
-            new THREE.BoxGeometry(3.8, 2.9, 0.08),
-            this.materials.darkWood
-        )
-        frame.position.set(0, 1.7, -2.72)
+        // Ornate wooden frame
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(4.0, 3.1, 0.1), this.materials.darkWood)
+        frame.position.set(0, 1.75, -2.91)
         this.scene.add(frame)
 
-        // Chalkboard surface
-        const tex = this.makeCanvasTexture(760, 580, (ctx, w, h) => {
-            // Chalkboard green
-            ctx.fillStyle = '#0f2208'
+        // Inner bevel
+        const bevel = new THREE.Mesh(
+            new THREE.BoxGeometry(3.75, 2.85, 0.04),
+            new THREE.MeshStandardMaterial({ color: 0xC47D0A, roughness: 0.5, metalness: 0.2 })
+        )
+        bevel.position.set(0, 1.75, -2.87)
+        this.scene.add(bevel)
+
+        const items = [
+            ['Masala C++',      'Game of DSA'],
+            ['Cosmos Chai',     'NEXUS Intelligence'],
+            ['Care Tea',        'SparshCare'],
+            ['AI Blend',        'SYNTHRON'],
+            ['RAG Brew',        'VORTEXRAG'],
+            ['Rust Kadha',      'rustkvd'],
+            ['Flux Decoction',  'FluxDB'],
+        ]
+
+        const tex = this.makeCanvasTexture(750, 570, (ctx, w, h) => {
+            // Deep teal-green chalkboard
+            ctx.fillStyle = '#0D1F0A'
             ctx.fillRect(0, 0, w, h)
-            // Chalk texture noise
-            for (let i = 0; i < 3000; i++) {
+
+            // Chalk grain texture
+            for (let i = 0; i < 4000; i++) {
                 ctx.beginPath()
                 ctx.arc(Math.random() * w, Math.random() * h, 0.5, 0, Math.PI * 2)
-                ctx.fillStyle = `rgba(200,220,180,${Math.random() * 0.04})`
+                ctx.fillStyle = `rgba(180,200,160,${Math.random() * 0.035})`
                 ctx.fill()
             }
-            // Title
-            ctx.font = 'bold 38px "Georgia", serif'
-            ctx.fillStyle = 'rgba(245,222,179,0.95)'
+
+            // Header — ornate
+            ctx.font = '700 34px "Georgia", serif'
+            ctx.fillStyle = '#FFF5E0'
             ctx.textAlign = 'center'
-            ctx.fillText("Today's Special", w / 2, 54)
-            // Divider
-            ctx.strokeStyle = 'rgba(232,160,32,0.6)'
+            ctx.fillText('✦  Today\'s Special  ✦', w / 2, 46)
+
+            ctx.strokeStyle = 'rgba(232,160,32,0.55)'
             ctx.lineWidth = 1.5
-            ctx.beginPath()
-            ctx.moveTo(40, 70)
-            ctx.lineTo(w - 40, 70)
-            ctx.stroke()
-            // Menu items (projects as tea menu items)
-            const items = [
-                ['Masala C++',   'Game of DSA'],
-                ['Cosmos Chai',  'NEXUS Intelligence'],
-                ['Care Tea',     'SparshCare'],
-                ['AI Blend',     'SYNTHRON'],
-                ['RAG Brew',     'VORTEXRAG'],
-                ['Rust Kadha',   'rustkvd'],
-                ['Flux Decoction','FluxDB'],
-            ]
-            ctx.font = '20px "Courier New", monospace'
+            ctx.beginPath(); ctx.moveTo(30, 60); ctx.lineTo(w - 30, 60); ctx.stroke()
+            ctx.lineWidth = 0.5
+            ctx.beginPath(); ctx.moveTo(30, 64); ctx.lineTo(w - 30, 64); ctx.stroke()
+
+            // Menu items
             items.forEach(([code, name], i) => {
-                const yy = 108 + i * 65
-                ctx.fillStyle = 'rgba(232,160,32,0.9)'
+                const y = 96 + i * 68
+                // Row bg on hover (decorative alternating tint)
+                if (i % 2 === 0) {
+                    ctx.fillStyle = 'rgba(255,245,224,0.04)'
+                    ctx.fillRect(20, y - 22, w - 40, 56)
+                }
+                // Tamil number / bullet
+                ctx.font = '600 16px monospace'
+                ctx.fillStyle = 'rgba(232,160,32,0.8)'
                 ctx.textAlign = 'left'
-                ctx.fillText(`  ${code}`, 50, yy)
-                ctx.fillStyle = 'rgba(245,222,179,0.7)'
-                ctx.font = '16px sans-serif'
-                ctx.fillText(`  → ${name}`, 50, yy + 22)
-                ctx.font = '20px "Courier New", monospace'
-                // dotted line
-                ctx.setLineDash([3, 5])
-                ctx.strokeStyle = 'rgba(245,222,179,0.2)'
-                ctx.lineWidth = 1
+                ctx.fillText(`${i + 1}.`, 28, y + 2)
+
+                // Code name (menu-style)
+                ctx.font = '600 22px "Georgia", serif'
+                ctx.fillStyle = '#FFF5E0'
+                ctx.fillText(code, 55, y + 2)
+
+                // Project name
+                ctx.font = '400 16px sans-serif'
+                ctx.fillStyle = 'rgba(255,245,224,0.6)'
+                ctx.fillText(`→  ${name}`, 55, y + 26)
+
+                // Price dots / divider
+                ctx.setLineDash([2, 4])
+                ctx.strokeStyle = 'rgba(255,245,224,0.12)'
+                ctx.lineWidth = 0.8
                 ctx.beginPath()
-                ctx.moveTo(50, yy + 36)
-                ctx.lineTo(w - 50, yy + 36)
+                ctx.moveTo(28, y + 42)
+                ctx.lineTo(w - 28, y + 42)
                 ctx.stroke()
                 ctx.setLineDash([])
             })
-            // Click hint
-            ctx.font = 'italic 15px sans-serif'
-            ctx.fillStyle = 'rgba(245,222,179,0.45)'
+
+            // Footer hint
+            ctx.font = 'italic 14px sans-serif'
+            ctx.fillStyle = 'rgba(232,160,32,0.5)'
             ctx.textAlign = 'center'
-            ctx.fillText('[ click to see projects ]', w / 2, h - 18)
+            ctx.fillText('☞  click to browse projects  ☜', w / 2, h - 14)
         })
 
         const board = new THREE.Mesh(
-            new THREE.PlaneGeometry(3.6, 2.7),
-            new THREE.MeshStandardMaterial({
-                map: tex,
-                roughness: 1.0,
-                metalness: 0.0
-            })
+            new THREE.PlaneGeometry(3.6, 2.75),
+            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 })
         )
-        board.position.set(0, 1.7, -2.68)
+        board.position.set(0, 1.75, -2.84)
         board.name = 'menuBoard'
         board.userData.action = 'projects'
         this.scene.add(board)
@@ -453,68 +601,88 @@ export default class TeaKadai {
 
     // ── About Me Frame ─────────────────────────────────
     buildAboutFrame() {
-        // Frame
         const frame = new THREE.Mesh(
-            new THREE.BoxGeometry(2.0, 2.6, 0.07),
-            this.materials.lightWood
+            new THREE.BoxGeometry(2.15, 2.75, 0.09), this.materials.lightWood
         )
-        frame.position.set(-4.0, 1.7, -2.72)
+        frame.position.set(-4.1, 1.75, -2.91)
         this.scene.add(frame)
 
-        // About photo/info texture
-        const tex = this.makeCanvasTexture(400, 520, (ctx, w, h) => {
-            ctx.fillStyle = '#1a0e05'
+        const bevel = new THREE.Mesh(
+            new THREE.BoxGeometry(1.95, 2.55, 0.04),
+            new THREE.MeshStandardMaterial({ color: 0xC47D0A, roughness: 0.5, metalness: 0.2 })
+        )
+        bevel.position.set(-4.1, 1.75, -2.87)
+        this.scene.add(bevel)
+
+        const tex = this.makeCanvasTexture(390, 510, (ctx, w, h) => {
+            // Warm cream background
+            ctx.fillStyle = '#FFFAF3'
             ctx.fillRect(0, 0, w, h)
-            // Avatar circle
-            ctx.beginPath()
-            ctx.arc(w / 2, 110, 70, 0, Math.PI * 2)
-            const grad = ctx.createRadialGradient(w / 2, 110, 10, w / 2, 110, 70)
-            grad.addColorStop(0, '#e8a020')
-            grad.addColorStop(1, '#8b2500')
+
+            // Warm gradient wash
+            const grad = ctx.createRadialGradient(w / 2, h * 0.3, 30, w / 2, h * 0.3, 180)
+            grad.addColorStop(0, 'rgba(232,160,32,0.12)')
+            grad.addColorStop(1, 'rgba(232,160,32,0)')
             ctx.fillStyle = grad
-            ctx.fill()
-            // Initials
-            ctx.font = 'bold 56px Georgia, serif'
-            ctx.fillStyle = '#1a0e05'
-            ctx.textAlign = 'center'
-            ctx.fillText('V', w / 2, 130)
-            // Name
-            ctx.font = 'bold 32px Georgia, serif'
-            ctx.fillStyle = '#f5deb3'
-            ctx.fillText('Vignesh S', w / 2, 218)
-            // Tagline
-            ctx.font = 'italic 16px Georgia, serif'
-            ctx.fillStyle = '#c47d0a'
-            ctx.fillText('Builder. Systems thinker.', w / 2, 248)
-            ctx.fillText('Tea-fuelled coder.', w / 2, 270)
-            // Divider
-            ctx.strokeStyle = 'rgba(232,160,32,0.4)'
-            ctx.lineWidth = 1
+            ctx.fillRect(0, 0, w, h)
+
+            // Avatar circle with gradient
+            const avGrad = ctx.createRadialGradient(w / 2, 96, 8, w / 2, 96, 68)
+            avGrad.addColorStop(0, '#F0B030')
+            avGrad.addColorStop(1, '#8B2500')
             ctx.beginPath()
-            ctx.moveTo(40, 290)
-            ctx.lineTo(w - 40, 290)
+            ctx.arc(w / 2, 96, 68, 0, Math.PI * 2)
+            ctx.fillStyle = avGrad
+            ctx.fill()
+            ctx.strokeStyle = 'rgba(232,160,32,0.8)'
+            ctx.lineWidth = 3
             ctx.stroke()
+
+            // "V" initial
+            ctx.font = '700 58px Georgia, serif'
+            ctx.fillStyle = '#FFFAF3'
+            ctx.textAlign = 'center'
+            ctx.fillText('V', w / 2, 118)
+
+            // Name
+            ctx.font = '700 30px Georgia, serif'
+            ctx.fillStyle = '#2A1A08'
+            ctx.fillText('Vignesh S', w / 2, 198)
+
+            // Tagline
+            ctx.font = 'italic 15px Georgia, serif'
+            ctx.fillStyle = '#C47D0A'
+            ctx.fillText('Builder · Systems Thinker · Coder', w / 2, 224)
+
+            // Divider
+            ctx.strokeStyle = 'rgba(196,125,10,0.3)'
+            ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(40, 242); ctx.lineTo(w - 40, 242); ctx.stroke()
+
             // Skills
-            ctx.font = '14px monospace'
-            ctx.fillStyle = 'rgba(245,222,179,0.8)'
-            const skills = ['Rust', 'Python', 'C++', 'Flutter', 'Three.js', 'AI / RAG']
+            ctx.font = '600 14px monospace'
+            ctx.fillStyle = '#2A1A08'
+            const skills = ['⚙  Rust', '🐍 Python', '⌨  C++', '📱 Flutter', '🌐 Three.js', '🤖 AI / RAG']
             skills.forEach((s, i) => {
                 const col = i % 2
                 const row = Math.floor(i / 2)
-                ctx.fillText(`● ${s}`, 50 + col * 180, 318 + row * 28)
+                ctx.fillStyle = i % 2 === 0 ? '#2A1A08' : '#5C3317'
+                ctx.textAlign = 'left'
+                ctx.fillText(s, 32 + col * 190, 270 + row * 30)
             })
+
             // Click hint
             ctx.font = 'italic 13px sans-serif'
-            ctx.fillStyle = 'rgba(245,222,179,0.4)'
+            ctx.fillStyle = 'rgba(196,125,10,0.55)'
             ctx.textAlign = 'center'
-            ctx.fillText('[ click for more ]', w / 2, h - 16)
+            ctx.fillText('click for full profile', w / 2, h - 14)
         })
 
         const panel = new THREE.Mesh(
-            new THREE.PlaneGeometry(1.84, 2.44),
-            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 })
+            new THREE.PlaneGeometry(1.92, 2.48),
+            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 })
         )
-        panel.position.set(-4.0, 1.7, -2.69)
+        panel.position.set(-4.1, 1.75, -2.84)
         panel.name = 'aboutFrame'
         panel.userData.action = 'about'
         this.scene.add(panel)
@@ -523,67 +691,82 @@ export default class TeaKadai {
 
     // ── Contact Sign ───────────────────────────────────
     buildContactSign() {
-        const tex = this.makeCanvasTexture(320, 180, (ctx, w, h) => {
-            ctx.fillStyle = '#1e0e04'
+        const frame = new THREE.Mesh(
+            new THREE.BoxGeometry(2.0, 1.15, 0.08), this.materials.darkWood
+        )
+        frame.position.set(4.1, 1.2, -2.91)
+        this.scene.add(frame)
+
+        const tex = this.makeCanvasTexture(400, 230, (ctx, w, h) => {
+            ctx.fillStyle = '#2A1A08'
             ctx.fillRect(0, 0, w, h)
-            ctx.strokeStyle = '#e8a020'
-            ctx.lineWidth = 3
-            ctx.strokeRect(5, 5, w - 10, h - 10)
-            ctx.font = 'bold 22px Georgia, serif'
-            ctx.fillStyle = '#f5deb3'
+
+            // Gold border
+            ctx.strokeStyle = '#E8A020'
+            ctx.lineWidth = 4
+            ctx.strokeRect(6, 6, w - 12, h - 12)
+
+            // Title
+            ctx.font = '700 26px Georgia, serif'
+            ctx.fillStyle = '#FFF5E0'
             ctx.textAlign = 'center'
-            ctx.fillText('Find Me Online', w / 2, 50)
-            ctx.font = '16px monospace'
-            ctx.fillStyle = '#e8a020'
-            ctx.fillText('github.com/vignesh2027', w / 2, 90)
-            ctx.font = '13px sans-serif'
-            ctx.fillStyle = 'rgba(245,222,179,0.5)'
-            ctx.fillText('[ click ]', w / 2, 160)
+            ctx.fillText('☕ Find Me', w / 2, 52)
+
+            ctx.strokeStyle = 'rgba(232,160,32,0.4)'
+            ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(30, 65); ctx.lineTo(w - 30, 65); ctx.stroke()
+
+            ctx.font = '500 17px monospace'
+            ctx.fillStyle = '#E8A020'
+            ctx.fillText('github.com/vignesh2027', w / 2, 102)
+
+            ctx.font = '400 14px sans-serif'
+            ctx.fillStyle = 'rgba(255,245,224,0.55)'
+            ctx.fillText('applemacbook6sep2004@gmail.com', w / 2, 132)
+
+            ctx.font = 'italic 13px sans-serif'
+            ctx.fillStyle = 'rgba(232,160,32,0.5)'
+            ctx.fillText('[ click to connect ]', w / 2, 210)
         })
 
         const sign = new THREE.Mesh(
-            new THREE.PlaneGeometry(1.7, 0.95),
-            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 })
+            new THREE.PlaneGeometry(1.82, 1.0),
+            new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7 })
         )
-        sign.position.set(4.0, 1.2, -2.7)
+        sign.position.set(4.1, 1.2, -2.84)
         sign.name = 'contactSign'
         sign.userData.action = 'contact'
         this.scene.add(sign)
         this.clickTargets.push(sign)
-
-        // Frame
-        const contactFrame = new THREE.Mesh(
-            new THREE.BoxGeometry(1.85, 1.1, 0.05),
-            this.materials.darkWood
-        )
-        contactFrame.position.set(4.0, 1.2, -2.73)
-        this.scene.add(contactFrame)
     }
 
-    // ── Star field background ──────────────────────────
+    // ── Star / Night sky ───────────────────────────────
     buildStarField() {
-        const count = 800
-        const positions = new Float32Array(count * 3)
+        const count = 1000
+        const pos = new Float32Array(count * 3)
         for (let i = 0; i < count; i++) {
-            positions[i * 3 + 0] = (Math.random() - 0.5) * 50
-            positions[i * 3 + 1] = Math.random() * 15 + 4
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 50 - 5
+            pos[i * 3]     = (Math.random() - 0.5) * 60
+            pos[i * 3 + 1] = Math.random() * 18 + 5
+            pos[i * 3 + 2] = (Math.random() - 0.5) * 60 - 6
         }
         const geo = new THREE.BufferGeometry()
-        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
         const stars = new THREE.Points(
             geo,
-            new THREE.PointsMaterial({ color: 0xfff8e7, size: 0.06, sizeAttenuation: true })
+            new THREE.PointsMaterial({ color: 0xFFF8E7, size: 0.055, sizeAttenuation: true, transparent: true, opacity: 0.8 })
         )
         this.scene.add(stars)
+        this.stars = stars
     }
 
     update(elapsedTime) {
-        // Gentle bobbing on lanterns
-        if (this.lanterns) {
-            this.lanterns.forEach((l, i) => {
-                l.position.y += Math.sin(elapsedTime * 0.8 + i * 1.5) * 0.0003
-            })
+        // Gentle lantern sway
+        this.lanterns.forEach((l, i) => {
+            l.rotation.z = Math.sin(elapsedTime * 0.5 + i * 1.8) * 0.018
+        })
+        // Subtle star twinkle
+        if (this.stars) {
+            this.stars.material.opacity = 0.7 + Math.sin(elapsedTime * 0.4) * 0.1
         }
     }
 }

@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Vignesh's Tea Kadai</title>
-    <meta name="description" content="Full-stack developer & systems engineer. Rust, Python, Flutter, Three.js enthusiast." />
+    <meta name="description" content="Systems engineer & full-stack developer — Rust, Python, Flutter, Three.js." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta itemprop="name" content="Vignesh - Developer Portfolio">
-    <meta itemprop="description" content="Full-stack developer building DSA games, AI frameworks, distributed systems, and immersive 3D experiences.">
-
+    <meta itemprop="name" content="Vignesh — Developer Portfolio">
+    <meta itemprop="description" content="Builder of distributed systems, AI frameworks, 3D experiences, and mobile apps.">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Vignesh's Tea Kadai — Portfolio">
-    <meta property="og:description" content="Full-stack developer. Rust, Python, Flutter, Three.js.">
-
+    <meta property="og:description" content="Systems engineer. Rust, Python, Flutter, Three.js.">
     <meta name="theme-color" content="#1a0e05">
 </head>
 <body>
+
+    <!-- Custom cursor -->
+    <div id="cursor"></div>
+    <div id="cursor-ring"></div>
 
     <!-- Three.js canvas -->
     <canvas class="webgl"></canvas>
@@ -23,7 +24,7 @@
     <!-- Fade overlay -->
     <div class="overlay"></div>
 
-    <!-- Loading screen -->
+    <!-- ── Loading / Brewing Screen ─────────────────── -->
     <div id="brewing">
         <div class="steam"></div>
         <div class="steam"></div>
@@ -38,129 +39,171 @@
             <div id="cup-saucer"></div>
         </div>
         <h1>Brewing your experience… <span id="progressPercentage">0</span>%</h1>
+        <div id="brew-progress-bar">
+            <div id="brew-progress-fill"></div>
+        </div>
     </div>
 
+    <!-- Start button -->
     <button class="start">ENTER KADAI</button>
 
-    <!-- Tooltip hint -->
-    <div id="hint" class="hint hidden">Click on objects to explore</div>
+    <!-- Hint -->
+    <div id="hint" class="hint hidden">☞ Click on the boards &amp; signs to explore</div>
 
-    <!-- ── Projects Overlay ────────────────────────────── -->
+    <!-- ── Projects Overlay ──────────────────────────── -->
     <div id="overlay-projects" class="overlay-panel hidden">
-        <button class="overlay-close" data-close="overlay-projects">✕</button>
-        <h2 class="panel-title">📋 Projects</h2>
-        <div class="projects-grid">
+        <div class="panel-header">
+            <h2 class="panel-title">☕ Projects</h2>
+            <button class="overlay-close" data-close="overlay-projects" aria-label="Close">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="projects-grid">
 
-            <a class="project-card" href="https://github.com/vignesh2027/Game-of-DSA" target="_blank">
-                <span class="tag cpp">C++ · Raylib</span>
-                <h3>Game of DSA</h3>
-                <p>A gamified Data Structures & Algorithms learning experience. Solve DSA puzzles inside an interactive game world.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/Game-of-DSA" target="_blank" rel="noopener">
+                    <span class="tag cpp">C++ · Raylib</span>
+                    <h3>Game of DSA</h3>
+                    <p>A gamified Data Structures &amp; Algorithms experience. Solve DSA puzzles inside an interactive game world with visual feedback.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
-            <a class="project-card" href="https://github.com/vignesh2027/cosmic-intelligence" target="_blank">
-                <span class="tag js">Three.js · Firebase</span>
-                <h3>NEXUS Cosmic Intelligence</h3>
-                <p>Immersive WebGL universe for exploring global knowledge — news, research, and intelligence visualised in 3D space.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/cosmic-intelligence" target="_blank" rel="noopener">
+                    <span class="tag js">Three.js · Firebase</span>
+                    <h3>NEXUS Cosmic Intelligence</h3>
+                    <p>Immersive WebGL universe for exploring global knowledge — news, research, and intelligence visualised across 3D space.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
-            <a class="project-card" href="https://github.com/vignesh2027/sparshcare" target="_blank">
-                <span class="tag flutter">Flutter · Firebase</span>
-                <h3>SparshCare</h3>
-                <p>ICU patient communication app with eye tracking, 4 languages, admin panel — bridging patients with caregivers.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/sparshcare" target="_blank" rel="noopener">
+                    <span class="tag flutter">Flutter · Firebase</span>
+                    <h3>SparshCare</h3>
+                    <p>ICU patient communication app — eye tracking, 4 languages, 6 communication cards, full admin panel. 50+ files.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
-            <a class="project-card" href="https://github.com/vignesh2027/synthron" target="_blank">
-                <span class="tag py">Python · AI</span>
-                <h3>SYNTHRON</h3>
-                <p>Multi-agent AI orchestration framework. Agents collaborate, delegate, and self-correct across complex tasks.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/synthron" target="_blank" rel="noopener">
+                    <span class="tag py">Python · AI</span>
+                    <h3>SYNTHRON</h3>
+                    <p>Multi-agent AI orchestration framework. Agents collaborate, delegate, and self-correct to tackle complex tasks end-to-end.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
-            <a class="project-card" href="https://github.com/vignesh2027/VORTEXRAG" target="_blank">
-                <span class="tag py">Python · RAG</span>
-                <h3>VORTEXRAG</h3>
-                <p>Novel 7-layer RAG pipeline eliminating semantic drift and context poisoning. Production-grade retrieval architecture.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/VORTEXRAG" target="_blank" rel="noopener">
+                    <span class="tag py">Python · RAG</span>
+                    <h3>VORTEXRAG</h3>
+                    <p>Novel 7-layer RAG pipeline solving semantic drift and context poisoning. Production-grade retrieval architecture.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
-            <a class="project-card" href="https://github.com/vignesh2027/rustkvd" target="_blank">
-                <span class="tag rust">Rust · Distributed</span>
-                <h3>rustkvd</h3>
-                <p>Distributed key-value store built in Rust — Raft consensus, LSM tree storage, gRPC transport. Battle-tested.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/rustkvd" target="_blank" rel="noopener">
+                    <span class="tag rust">Rust · Distributed</span>
+                    <h3>rustkvd</h3>
+                    <p>Distributed key-value store in Rust — Raft consensus, LSM tree storage engine, gRPC transport layer.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
-            <a class="project-card" href="https://github.com/vignesh2027/fluxdb" target="_blank">
-                <span class="tag rust">Rust · Systems</span>
-                <h3>FluxDB</h3>
-                <p>Time-series database from scratch in Rust. 100+ tests, custom storage engine, query engine, and ingestion pipeline.</p>
-                <span class="card-link">github ↗</span>
-            </a>
+                <a class="project-card" href="https://github.com/vignesh2027/fluxdb" target="_blank" rel="noopener">
+                    <span class="tag rust">Rust · Systems</span>
+                    <h3>FluxDB</h3>
+                    <p>Time-series database built from scratch in Rust. Custom storage engine, query processor, and ingestion pipeline. 100+ tests.</p>
+                    <span class="card-link">View on GitHub</span>
+                </a>
 
+            </div>
         </div>
     </div>
 
-    <!-- ── About Me Overlay ───────────────────────────── -->
+    <!-- ── About Me Overlay ──────────────────────────── -->
     <div id="overlay-about" class="overlay-panel hidden">
-        <button class="overlay-close" data-close="overlay-about">✕</button>
-        <div class="about-content">
-            <div class="about-avatar">V</div>
-            <h2 class="about-name">Vignesh S</h2>
-            <p class="about-tagline">Systems thinker. Builder. Tea-fuelled coder.</p>
-            <p class="about-bio">
-                I build things at the intersection of systems programming, AI, and interactive experiences.
-                From distributed databases in Rust to ICU patient apps in Flutter — if it's hard and
-                interesting, I'm in.
-            </p>
-            <div class="skills-grid">
-                <span class="skill">Rust</span>
-                <span class="skill">Python</span>
-                <span class="skill">C++</span>
-                <span class="skill">Flutter/Dart</span>
-                <span class="skill">Three.js</span>
-                <span class="skill">Firebase</span>
-                <span class="skill">Distributed Systems</span>
-                <span class="skill">RAG / LLMs</span>
-                <span class="skill">WebGL</span>
-            </div>
-            <div class="social-links">
-                <a href="https://github.com/vignesh2027" target="_blank" class="social-btn github">GitHub</a>
-                <a href="mailto:applemacbook6sep2004@gmail.com" class="social-btn email">Email</a>
+        <div class="panel-header">
+            <h2 class="panel-title">About</h2>
+            <button class="overlay-close" data-close="overlay-about" aria-label="Close">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="about-card">
+                <div class="about-hero">
+                    <div class="about-avatar">V</div>
+                    <div class="about-hero-text">
+                        <h2>Vignesh S</h2>
+                        <p class="tagline">Builder · Systems thinker · Tea-fuelled coder</p>
+                    </div>
+                </div>
+                <div class="about-body">
+                    <p class="about-bio">
+                        I build things at the intersection of systems programming, AI, and interactive experiences.
+                        From distributed databases in Rust to ICU patient apps in Flutter — if it's technically hard
+                        and genuinely useful, I'm in. Currently exploring multi-agent AI systems and WebGL-powered
+                        knowledge interfaces.
+                    </p>
+                    <p class="skills-label">Skills &amp; Technologies</p>
+                    <div class="skills-grid">
+                        <span class="skill">Rust</span>
+                        <span class="skill">Python</span>
+                        <span class="skill">C++</span>
+                        <span class="skill">Flutter / Dart</span>
+                        <span class="skill">Three.js</span>
+                        <span class="skill">Firebase</span>
+                        <span class="skill">Distributed Systems</span>
+                        <span class="skill">RAG / LLMs</span>
+                        <span class="skill">WebGL / GLSL</span>
+                        <span class="skill">gRPC</span>
+                        <span class="skill">Raft Consensus</span>
+                        <span class="skill">LSM Trees</span>
+                    </div>
+                    <div class="social-links">
+                        <a href="https://github.com/vignesh2027" target="_blank" rel="noopener" class="social-btn github">
+                            ⌥ GitHub
+                        </a>
+                        <a href="mailto:applemacbook6sep2004@gmail.com" class="social-btn email">
+                            ✉ Email me
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ── Contact Overlay ────────────────────────────── -->
+    <!-- ── Contact Overlay ───────────────────────────── -->
     <div id="overlay-contact" class="overlay-panel hidden">
-        <button class="overlay-close" data-close="overlay-contact">✕</button>
-        <h2 class="panel-title">☕ Find Me</h2>
-        <div class="contact-content">
-            <a href="https://github.com/vignesh2027" target="_blank" class="contact-card">
-                <span class="contact-icon">⌥</span>
-                <div>
-                    <strong>GitHub</strong>
-                    <p>github.com/vignesh2027</p>
-                </div>
-            </a>
-            <a href="mailto:applemacbook6sep2004@gmail.com" class="contact-card">
-                <span class="contact-icon">✉</span>
-                <div>
-                    <strong>Email</strong>
-                    <p>applemacbook6sep2004@gmail.com</p>
-                </div>
-            </a>
+        <div class="panel-header">
+            <h2 class="panel-title">Find Me</h2>
+            <button class="overlay-close" data-close="overlay-contact" aria-label="Close">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="contact-grid">
+                <a href="https://github.com/vignesh2027" target="_blank" rel="noopener" class="contact-card">
+                    <div class="contact-icon-wrap">⌥</div>
+                    <div>
+                        <strong>GitHub</strong>
+                        <p>github.com/vignesh2027</p>
+                    </div>
+                    <span class="contact-arrow">↗</span>
+                </a>
+                <a href="mailto:applemacbook6sep2004@gmail.com" class="contact-card">
+                    <div class="contact-icon-wrap">✉</div>
+                    <div>
+                        <strong>Email</strong>
+                        <p>applemacbook6sep2004@gmail.com</p>
+                    </div>
+                    <span class="contact-arrow">↗</span>
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- ── Navigation Menu ───────────────────────────── -->
+    <!-- ── Nav ───────────────────────────────────────── -->
     <nav id="nav" class="nav hidden">
         <button id="nav-projects" class="nav-btn">Projects</button>
-        <button id="nav-about" class="nav-btn">About</button>
-        <button id="nav-contact" class="nav-btn">Contact</button>
+        <button id="nav-about"    class="nav-btn">About</button>
+        <button id="nav-contact"  class="nav-btn">Contact</button>
     </nav>
+
+    <!-- ── Keyboard shortcuts ───────────────────────── -->
+    <div id="shortcuts" class="shortcuts hidden">
+        <div class="key-hint"><kbd>P</kbd> Projects</div>
+        <div class="key-hint"><kbd>A</kbd> About</div>
+        <div class="key-hint"><kbd>C</kbd> Contact</div>
+        <div class="key-hint"><kbd>ESC</kbd> Close</div>
+    </div>
 
 </body>
 </html>

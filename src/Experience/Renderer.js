@@ -22,10 +22,10 @@ export default class Renderer {
         this.instance.setPixelRatio(this.sizes.pixelRatio)
         this.instance.outputColorSpace = THREE.SRGBColorSpace
         this.instance.toneMapping = THREE.ACESFilmicToneMapping
-        this.instance.toneMappingExposure = 1.2
+        this.instance.toneMappingExposure = 1.35
         this.instance.shadowMap.enabled = true
         this.instance.shadowMap.type = THREE.PCFSoftShadowMap
-        this.instance.setClearColor('#0d0a06')
+        this.instance.setClearColor('#1A0E05')
     }
 
     resize() {

@@ -4,72 +4,56 @@ import Experience from './Experience.js'
 export default class RayCaster {
     constructor() {
         this.experience = new Experience()
-        this.scene = this.experience.scene
-        this.camera = this.experience.camera
-        this.canvas = this.experience.canvas
-        this.controller = this.experience.controller
+        this.scene      = this.experience.scene
+        this.camera     = this.experience.camera
+        this.canvas     = this.experience.canvas
 
         this.raycaster = new THREE.Raycaster()
-        this.mouse = new THREE.Vector2()
-        this.hovered = null
+        this.mouse     = new THREE.Vector2()
+        this.hovered   = null
 
-        this.canvas.addEventListener('mousemove', e => this.onMouseMove(e))
-        this.canvas.addEventListener('click', e => this.onClick(e))
-        this.canvas.addEventListener('touchend', e => this.onTouchEnd(e), { passive: false })
+        this.canvas.addEventListener('mousemove',  e => this.onMouseMove(e))
+        this.canvas.addEventListener('click',      e => this.onClick(e))
+        this.canvas.addEventListener('touchend',   e => this.onTouchEnd(e), { passive: false })
     }
+
+    get controller() { return this.experience.controller }
 
     getTargets() {
         return this.experience.world?.teaKadai?.clickTargets || []
     }
 
-    onMouseMove(e) {
-        this.mouse.x = (e.clientX / this.experience.sizes.width) * 2 - 1
-        this.mouse.y = -(e.clientY / this.experience.sizes.height) * 2 + 1
-
+    cast(clientX, clientY) {
+        const s = this.experience.sizes
+        this.mouse.x =  (clientX / s.width)  * 2 - 1
+        this.mouse.y = -(clientY / s.height)  * 2 + 1
         this.raycaster.setFromCamera(this.mouse, this.camera.instance)
-        const targets = this.getTargets()
-        const intersects = this.raycaster.intersectObjects(targets)
+        return this.raycaster.intersectObjects(this.getTargets())
+    }
 
-        if (intersects.length > 0) {
-            document.body.style.cursor = 'pointer'
-            this.hovered = intersects[0].object
-        } else {
-            document.body.style.cursor = 'default'
-            this.hovered = null
-        }
+    onMouseMove(e) {
+        const hits = this.cast(e.clientX, e.clientY)
+        const isHit = hits.length > 0
+        this.hovered = isHit ? hits[0].object : null
+        this.controller?.setHovering(isHit)
+        document.body.style.cursor = isHit ? 'none' : 'none'
     }
 
     onClick(e) {
-        this.mouse.x = (e.clientX / this.experience.sizes.width) * 2 - 1
-        this.mouse.y = -(e.clientY / this.experience.sizes.height) * 2 + 1
-
-        this.raycaster.setFromCamera(this.mouse, this.camera.instance)
-        const targets = this.getTargets()
-        const intersects = this.raycaster.intersectObjects(targets)
-
-        if (intersects.length > 0) {
-            const obj = intersects[0].object
-            if (obj.userData.action) {
-                this.controller.handleAction(obj.userData.action)
-            }
+        const hits = this.cast(e.clientX, e.clientY)
+        if (hits.length > 0) {
+            const action = hits[0].object.userData.action
+            if (action) this.controller?.handleAction(action)
         }
     }
 
     onTouchEnd(e) {
         e.preventDefault()
-        const touch = e.changedTouches[0]
-        this.mouse.x = (touch.clientX / this.experience.sizes.width) * 2 - 1
-        this.mouse.y = -(touch.clientY / this.experience.sizes.height) * 2 + 1
-
-        this.raycaster.setFromCamera(this.mouse, this.camera.instance)
-        const targets = this.getTargets()
-        const intersects = this.raycaster.intersectObjects(targets)
-
-        if (intersects.length > 0) {
-            const obj = intersects[0].object
-            if (obj.userData.action) {
-                this.controller.handleAction(obj.userData.action)
-            }
+        const t = e.changedTouches[0]
+        const hits = this.cast(t.clientX, t.clientY)
+        if (hits.length > 0) {
+            const action = hits[0].object.userData.action
+            if (action) this.controller?.handleAction(action)
         }
     }
 }

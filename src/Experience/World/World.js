@@ -8,11 +8,11 @@ import SteamParticles from './SteamParticles.js'
 export default class World {
     constructor() {
         this.experience = new Experience()
-        this.resources = this.experience.resources
 
+        // Materials must exist before TeaKadai — pass directly to avoid circular world reference
         this.materials = new Materials()
         this.environment = new Environment()
-        this.teaKadai = new TeaKadai()
+        this.teaKadai = new TeaKadai(this.materials)  // pass materials explicitly
         this.steamParticles = new SteamParticles()
         this.animations = new Animations()
     }
