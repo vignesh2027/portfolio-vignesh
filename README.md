@@ -1,6 +1,5 @@
 <div align="center">
 
-<img src="static/vignesh.jpg" width="120" style="border-radius:50%" alt="Vigneshwar L"/>
 
 <br/>
 
