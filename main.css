@@ -34,7 +34,12 @@ body.hovering #cursor { width:5px; height:5px; background:var(--amber-lt); }
 body.hovering #cursor-ring { width:46px; height:46px; border-color:var(--amber); }
 
 /* ── Canvas ───────────────────────────────────── */
-.webgl { position:fixed; inset:0; z-index:1; display:block; outline:none; }
+.webgl {
+    position:fixed; inset:0; z-index:1; display:block; outline:none;
+    will-change: transform;          /* own GPU compositor layer — no black-frame flicker */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
 
 /* ── Fade overlay ─────────────────────────────── */
 .fade-overlay {
