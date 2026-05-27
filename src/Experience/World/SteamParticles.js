@@ -57,12 +57,14 @@ export default class SteamParticles {
     }
 
     update() {
+        this._frame = (this._frame || 0) + 1
+        if (this._frame % 3 !== 0) return   // update steam every 3 frames — invisible at this scale
+
         this.particles.forEach(p => {
             const pos = p.points.geometry.attributes.position
             for (let i = 0; i < p.count; i++) {
-                p.ages[i] += 0.008
+                p.ages[i] += 0.024
                 if (p.ages[i] > 1) {
-                    // reset particle to source
                     pos.setXYZ(
                         i,
                         p.source.x + (Math.random() - 0.5) * 0.06,
@@ -85,8 +87,6 @@ export default class SteamParticles {
                 }
             }
             pos.needsUpdate = true
-            // Fade opacity with age average
-            p.points.material.opacity = 0.2 + Math.sin(Date.now() * 0.001) * 0.06
         })
     }
 }

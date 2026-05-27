@@ -83,20 +83,20 @@ export default class Camera {
                 position: new THREE.Vector3(0, 2.5, -1.0),
                 target:   new THREE.Vector3(0, 2.2, -3.0)
             },
-            // ── Outside — down the street ────────────────────
+            // ── Outside — facing the building facade ─────────
             outdoor: {
-                position: new THREE.Vector3(0, 3.0, 8.0),
-                target:   new THREE.Vector3(0, 2.0, 20.0)
+                position: new THREE.Vector3(0, 3.0, 9.0),
+                target:   new THREE.Vector3(0, 2.5, 4.2)
             },
-            // ── Outside — git stats billboard ────────────────
+            // ── Outside — git stats facade panel (right) ─────
             gitStats: {
-                position: new THREE.Vector3(-6.0, 3.0, 12.0),
-                target:   new THREE.Vector3(-10.0, 2.8, 14.0)
+                position: new THREE.Vector3(4.5, 2.8, 7.5),
+                target:   new THREE.Vector3(3.9, 2.6, 4.2)
             },
-            // ── Outside — about me billboard ─────────────────
+            // ── Outside — about me facade panel (left) ───────
             aboutOutdoor: {
-                position: new THREE.Vector3(6.0, 3.0, 12.0),
-                target:   new THREE.Vector3(10.0, 2.8, 14.0)
+                position: new THREE.Vector3(-4.5, 2.8, 7.5),
+                target:   new THREE.Vector3(-3.9, 2.6, 4.2)
             },
             // ── Outside — opposite shop ───────────────────────
             oppositeShop: {

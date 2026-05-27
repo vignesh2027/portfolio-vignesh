@@ -16,16 +16,18 @@ export default class Renderer {
         this.instance = new THREE.WebGLRenderer({
             canvas: this.canvas,
             antialias: true,
-            alpha: false
+            alpha: false,
+            powerPreference: 'high-performance'
         })
         this.instance.setSize(this.sizes.width, this.sizes.height)
         this.instance.setPixelRatio(this.sizes.pixelRatio)
         this.instance.outputColorSpace = THREE.SRGBColorSpace
         this.instance.toneMapping = THREE.ACESFilmicToneMapping
         this.instance.toneMappingExposure = 1.35
-        this.instance.shadowMap.enabled = true
-        this.instance.shadowMap.type = THREE.PCFSoftShadowMap
-        this.instance.setClearColor('#1A0E05')
+        this.instance.shadowMap.enabled = false
+        this.instance.setClearColor('#050203')
+        // scene.background fills during the render pass — no separate clear step that can flash
+        this.experience.scene.background = new THREE.Color('#050203')
     }
 
     resize() {

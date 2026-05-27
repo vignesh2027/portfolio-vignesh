@@ -78,8 +78,15 @@ export default class PreLoader extends EventEmitter {
                 if (this.brewingEl) this.brewingEl.style.display = 'none'
             }, 600)
 
-            // Fade dark overlay → reveal 3D scene
-            setTimeout(() => this.overlayEl?.classList.add('fade'), 200)
+            // Fade dark overlay → reveal 3D scene, then remove it from DOM entirely
+            setTimeout(() => {
+                if (this.overlayEl) {
+                    this.overlayEl.classList.add('fade')
+                    this.overlayEl.addEventListener('transitionend', () => {
+                        this.overlayEl.style.display = 'none'
+                    }, { once: true })
+                }
+            }, 200)
 
             // Show all 3D UI
             setTimeout(() => {

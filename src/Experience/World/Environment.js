@@ -19,58 +19,40 @@ export default class Environment {
     }
 
     setMoonLight() {
-        // Soft cool moonlight — comes from behind camera (from street)
-        this.moonLight = new THREE.DirectionalLight(0xB0C8FF, 0.32)
-        this.moonLight.position.set(-4, 12, 15)
-        this.moonLight.castShadow = true
+        this.moonLight = new THREE.DirectionalLight(0xB0C8FF, 0.28)
+        this.moonLight.position.set(-4, 12, 10)
         this.scene.add(this.moonLight)
 
-        // Warm fill for interior counter
-        this.fillLight = new THREE.DirectionalLight(0xFF9040, 0.22)
+        // Warm fill
+        this.fillLight = new THREE.DirectionalLight(0xFF9040, 0.20)
         this.fillLight.position.set(0, 4, 6)
         this.scene.add(this.fillLight)
 
-        // Street ambient — cool blue-white from above the street
-        this.streetAmbient = new THREE.DirectionalLight(0xA0B8CC, 0.18)
-        this.streetAmbient.position.set(0, 15, 16)
-        this.scene.add(this.streetAmbient)
-
-        // Opposite building reflected light (blue-purple)
-        this.oppLight = new THREE.PointLight(0x4040FF, 0.6, 18, 1.4)
-        this.oppLight.position.set(0, 6, 26)
-        this.scene.add(this.oppLight)
+        // Street + exterior fill
+        this.streetLight = new THREE.DirectionalLight(0x8090AA, 0.15)
+        this.streetLight.position.set(0, 14, 18)
+        this.scene.add(this.streetLight)
     }
 
     setLanternLights() {
-        // 5 lanterns matching TeaKadai.js buildLanterns() positions
+        // 3 lantern lights (no shadows — visual lanterns still exist, just fewer lights)
         const defs = [
-            { x: -4.0, y: 2.7, z:  1.5, i: 1.8, color: 0xFF9010 },
-            { x: -1.8, y: 2.9, z:  0.0, i: 2.4, color: 0xFFAA20 },
-            { x:  0.0, y: 3.1, z: -1.5, i: 3.0, color: 0xFF8000 },
-            { x:  1.8, y: 2.9, z:  0.0, i: 2.4, color: 0xFFAA20 },
-            { x:  4.0, y: 2.7, z:  1.5, i: 1.8, color: 0xFF9010 },
+            { x: -3.0, y: 2.7, z:  0.5, i: 2.2, color: 0xFF9010 },
+            { x:  0.0, y: 3.0, z: -0.8, i: 2.8, color: 0xFF8800 },
+            { x:  3.0, y: 2.7, z:  0.5, i: 2.2, color: 0xFF9010 },
         ]
 
         this.lanternLights = defs.map(d => {
-            const light = new THREE.PointLight(d.color, d.i, 5.5, 1.6)
+            const light = new THREE.PointLight(d.color, d.i, 6.0, 1.5)
             light.position.set(d.x, d.y, d.z)
-            light.castShadow = true
-            light.shadow.mapSize.set(512, 512)
-            light.shadow.camera.near = 0.1
-            light.shadow.camera.far  = 7
             this.scene.add(light)
             return { light, baseI: d.i }
         })
 
-        // Stove glow — orange-red (stove at x≈5.5, z≈-1.5 in new room)
-        this.stoveLight = new THREE.PointLight(0xFF4400, 1.6, 3.2, 2.2)
-        this.stoveLight.position.set(5.5, 0.9, -1.5)
+        // Stove glow
+        this.stoveLight = new THREE.PointLight(0xFF4400, 1.4, 2.8, 2)
+        this.stoveLight.position.set(4.0, 0.9, 0.0)
         this.scene.add(this.stoveLight)
-
-        // Window moonlight glow — left wall at x=-8, z=1.5
-        this.windowLight = new THREE.PointLight(0x6090FF, 0.65, 5.0, 2)
-        this.windowLight.position.set(-6.5, 2.2, 1.5)
-        this.scene.add(this.windowLight)
     }
 
     setFog() {

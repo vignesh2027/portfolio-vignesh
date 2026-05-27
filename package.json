@@ -1,7 +1,7 @@
 {
   "name": "portfolio-vignesh",
   "version": "1.0.0",
-  "description": "Vignesh's Tea Kadai Portfolio",
+  "description": "Immersive 3D Tamil tea kadai portfolio — Three.js procedural WebGL, zero 3D models. ML Researcher · Systems Builder · Cloud (AWS/GCP) · Vigneshwar L",
   "license": "MIT",
   "scripts": {
     "build": "webpack --config ./bundler/webpack.prod.js",

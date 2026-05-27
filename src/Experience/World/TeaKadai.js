@@ -48,11 +48,10 @@ export default class TeaKadai {
 
         // ── Exterior world ────────────────────────────
         this.buildEntrance()
+        this.buildExteriorFacadePanels()
         this.buildExteriorGround()
         this.buildExteriorWalls()
         this.buildStreetLamps()
-        this.buildGitStatsBillboard()
-        this.buildAboutMeBillboard()
         this.buildOppositeShop()
 
         // ── Atmosphere ────────────────────────────────
@@ -131,10 +130,10 @@ export default class TeaKadai {
             ctx.fillStyle = g
             ctx.fillRect(0, 0, w, h)
             // Subtle plaster texture
-            for (let i = 0; i < 3000; i++) {
+            for (let i = 0; i < 400; i++) {
                 const x = Math.random() * w, y = Math.random() * h
-                ctx.fillStyle = `rgba(180,140,80,${Math.random() * 0.04})`
-                ctx.fillRect(x, y, 2, 2)
+                ctx.fillStyle = `rgba(180,140,80,${Math.random() * 0.06})`
+                ctx.fillRect(x, y, 3, 3)
             }
         })
         const backWall = new THREE.Mesh(
@@ -559,10 +558,10 @@ export default class TeaKadai {
             ctx.fillRect(0, 0, w, h)
 
             // Chalk grain
-            for (let i = 0; i < 6000; i++) {
+            for (let i = 0; i < 600; i++) {
                 ctx.beginPath()
-                ctx.arc(Math.random() * w, Math.random() * h, 0.6, 0, Math.PI * 2)
-                ctx.fillStyle = `rgba(160,190,140,${Math.random() * 0.03})`
+                ctx.arc(Math.random() * w, Math.random() * h, 1.2, 0, Math.PI * 2)
+                ctx.fillStyle = `rgba(160,190,140,${Math.random() * 0.08})`
                 ctx.fill()
             }
 
@@ -681,11 +680,11 @@ export default class TeaKadai {
             // Name + role
             ctx.font = '700 32px Georgia, serif'
             ctx.fillStyle = '#1A0A00'
-            ctx.fillText('Vignesh S', w / 2, 200)
+            ctx.fillText('Vigneshwar L', w / 2, 200)
 
             ctx.font = 'italic 15px Georgia, serif'
             ctx.fillStyle = '#C47D0A'
-            ctx.fillText('CS Student · Takshashila Univ', w / 2, 228)
+            ctx.fillText('ML Researcher · Systems Builder · Cloud', w / 2, 228)
 
             ctx.strokeStyle = 'rgba(196,125,10,0.3)'
             ctx.lineWidth = 1
@@ -693,13 +692,12 @@ export default class TeaKadai {
 
             // Bio text
             const bioLines = [
-                'Building systems that matter —',
-                'from Rust KV stores to Flutter apps,',
-                'ML pipelines to 3D immersive worlds.',
+                'ML Researcher · Systems Builder · Cloud Engineer',
+                'RAG Pipelines · Distributed Systems · AWS/GCP',
+                'VORTEXRAG · rustkvd · FluxDB · SparshCare',
                 '',
-                '3rd year B.Tech · CS · Chennai',
-                'Passionate about low-level systems,',
-                'AI/ML, and creative technology.',
+                'Takshashila University · B.Tech CS · Chennai',
+                '7 open-source projects · 200+ contributions',
             ]
             ctx.font = '400 15px sans-serif'
             ctx.fillStyle = '#3A2010'
@@ -756,9 +754,9 @@ export default class TeaKadai {
             ctx.fillStyle = '#0D0805'
             ctx.fillRect(0, 0, w, h)
             // Subtle grain
-            for (let i = 0; i < 2000; i++) {
-                ctx.fillStyle = `rgba(255,245,224,${Math.random() * 0.025})`
-                ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2)
+            for (let i = 0; i < 300; i++) {
+                ctx.fillStyle = `rgba(255,245,224,${Math.random() * 0.07})`
+                ctx.fillRect(Math.random() * w, Math.random() * h, 3, 3)
             }
 
             ctx.font = '700 30px Georgia, serif'
@@ -1414,8 +1412,8 @@ export default class TeaKadai {
             this.scene.add(b)
         })
 
-        // Screen canvas
-        const W = 512, H = 320
+        // Screen canvas — smaller size since TV is small in scene
+        const W = 256, H = 160
         this.tvCanvas = document.createElement('canvas')
         this.tvCanvas.width  = W
         this.tvCanvas.height = H
@@ -1431,11 +1429,7 @@ export default class TeaKadai {
         screen.position.set(5.69, 2.8, 0.8)
         this.scene.add(screen)
 
-        // TV glow light
-        const tvLight = new THREE.PointLight(0x00FF88, 0.3, 2.5, 2)
-        tvLight.position.set(5.2, 2.8, 0.8)
-        this.scene.add(tvLight)
-        this.tvLight = tvLight
+        this.tvLight = null
 
         // Initial frame draw
         this.drawTVFrame(0)
@@ -1444,7 +1438,7 @@ export default class TeaKadai {
     drawTVFrame(elapsedTime) {
         if (!this.tvCtx) return
         const ctx = this.tvCtx
-        const W = 512, H = 320
+        const W = 256, H = 160
 
         ctx.fillStyle = '#050D08'
         ctx.fillRect(0, 0, W, H)
@@ -1616,10 +1610,7 @@ export default class TeaKadai {
         neon.position.set(4.8, 2.8, FACADE_Z - 0.15)
         this.scene.add(neon)
 
-        // Neon glow light near sign
-        const neonGlow = new THREE.PointLight(0x00FF88, 0.8, 2.5, 2)
-        neonGlow.position.set(4.8, 2.8, FACADE_Z + 0.2)
-        this.scene.add(neonGlow)
+        // (neon light removed for perf — emissive on mesh provides glow)
 
         // Front step
         const step = new THREE.Mesh(new THREE.BoxGeometry(12, 0.14, 0.6), m.marble)
@@ -1635,10 +1626,10 @@ export default class TeaKadai {
             ctx.fillStyle = '#1A1814'
             ctx.fillRect(0, 0, w, h)
             // Grain
-            for (let i = 0; i < 8000; i++) {
+            for (let i = 0; i < 800; i++) {
                 const x = Math.random() * w, y = Math.random() * h
-                ctx.fillStyle = `rgba(${60 + Math.random() * 30},${55 + Math.random() * 25},${45 + Math.random() * 20},0.4)`
-                ctx.fillRect(x, y, 1, 1)
+                ctx.fillStyle = `rgba(${60 + Math.random() * 30},${55 + Math.random() * 25},${45 + Math.random() * 20},0.5)`
+                ctx.fillRect(x, y, 2, 2)
             }
             // Lane markings
             ctx.strokeStyle = 'rgba(255,255,160,0.55)'
@@ -1752,477 +1743,314 @@ export default class TeaKadai {
             head.position.set(x + 1.2, 4.98, z)
             this.scene.add(head)
 
-            // Bulb
+            // Bulb (emissive only — no PointLight for perf)
             const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), bulbMat)
             bulb.position.set(x + 1.2, 4.87, z)
             this.scene.add(bulb)
-
-            // Street light
-            const light = new THREE.PointLight(0xFFE8A0, 1.4, 8.0, 1.6)
-            light.position.set(x + 1.2, 4.7, z)
-            this.scene.add(light)
         })
     }
 
-    // ── Git stats billboard (left, outside) ───────────
-    buildGitStatsBillboard() {
-        const POST_X = -10, POST_Z = 14
+    // ── Exterior facade panels (on building front wall) ─
+    buildExteriorFacadePanels() {
+        const backingMat = new THREE.MeshStandardMaterial({ color: 0x1A0A02, roughness: 0.7 })
 
-        // Post
-        const poleMat = new THREE.MeshStandardMaterial({ color: 0x282828, roughness: 0.6, metalness: 0.7 })
-        const post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 6.0, 10), poleMat)
-        post1.position.set(POST_X - 1.2, 2.18, POST_Z)
-        this.scene.add(post1)
-        const post2 = post1.clone()
-        post2.position.set(POST_X + 1.2, 2.18, POST_Z)
-        this.scene.add(post2)
+        // Helper: draw the about panel canvas (called once with placeholder, again with real photo)
+        const drawAbout = (ctx, w, h, photo) => {
+            const bg = ctx.createLinearGradient(0, 0, 0, h)
+            bg.addColorStop(0, '#1E0B00'); bg.addColorStop(1, '#0C0500')
+            ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h)
+            ctx.strokeStyle = '#E8A020'; ctx.lineWidth = 3
+            ctx.strokeRect(4, 4, w - 8, h - 8)
 
-        // Cross bar
-        const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.0, 8), poleMat)
-        bar.rotation.z = Math.PI / 2
-        bar.position.set(POST_X, 5.3, POST_Z)
-        this.scene.add(bar)
-
-        // Board backing
-        const backing = new THREE.Mesh(
-            new THREE.BoxGeometry(3.6, 4.8, 0.18),
-            new THREE.MeshStandardMaterial({ color: 0x0A0A0A, roughness: 0.7 })
-        )
-        backing.position.set(POST_X, 2.8, POST_Z)
-        this.scene.add(backing)
-
-        // Rear emissive glow
-        const glow = new THREE.Mesh(
-            new THREE.PlaneGeometry(3.4, 4.6),
-            new THREE.MeshStandardMaterial({ color: 0x002010, emissive: 0x002010, emissiveIntensity: 0.4 })
-        )
-        glow.rotation.y = Math.PI
-        glow.position.set(POST_X, 2.8, POST_Z + 0.1)
-        this.scene.add(glow)
-
-        const tex = this.makeCanvasTexture(720, 960, (ctx, w, h) => {
-            // Background
-            ctx.fillStyle = '#050D08'
-            ctx.fillRect(0, 0, w, h)
-
-            // Grid dots
-            for (let xi = 0; xi < w; xi += 32) {
-                for (let yi = 0; yi < h; yi += 32) {
-                    ctx.beginPath(); ctx.arc(xi, yi, 0.8, 0, Math.PI * 2)
-                    ctx.fillStyle = 'rgba(0,255,136,0.06)'; ctx.fill()
-                }
+            // Photo or fallback avatar
+            ctx.save()
+            ctx.beginPath(); ctx.arc(w / 2, 82, 66, 0, Math.PI * 2); ctx.clip()
+            if (photo) {
+                ctx.drawImage(photo, w / 2 - 66, 16, 132, 132)
+            } else {
+                const av = ctx.createRadialGradient(w / 2, 82, 8, w / 2, 82, 66)
+                av.addColorStop(0, '#F5C040'); av.addColorStop(1, '#8B2500')
+                ctx.fillStyle = av; ctx.fill()
+                ctx.font = '700 56px Georgia'; ctx.fillStyle = '#FFFAF3'
+                ctx.textAlign = 'center'; ctx.fillText('V', w / 2, 108)
             }
+            ctx.restore()
+            ctx.strokeStyle = '#E8A020'; ctx.lineWidth = 3
+            ctx.beginPath(); ctx.arc(w / 2, 82, 66, 0, Math.PI * 2); ctx.stroke()
 
-            // Header
-            ctx.font = '700 52px Georgia, serif'
-            ctx.fillStyle = '#00FF88'
             ctx.textAlign = 'center'
-            ctx.shadowColor = 'rgba(0,255,136,0.6)'
-            ctx.shadowBlur = 12
-            ctx.fillText('🐙  GitHub Stats', w / 2, 68)
-            ctx.shadowBlur = 0
+            ctx.font = '700 34px Georgia'; ctx.fillStyle = '#FFF5E0'
+            ctx.shadowColor = 'rgba(232,160,32,0.7)'; ctx.shadowBlur = 10
+            ctx.fillText('Vigneshwar L', w / 2, 182); ctx.shadowBlur = 0
+            ctx.font = '500 16px sans-serif'; ctx.fillStyle = '#E8A020'
+            ctx.fillText('ML Researcher · Systems Builder · Cloud', w / 2, 208)
 
-            ctx.font = '400 22px monospace'
-            ctx.fillStyle = 'rgba(255,255,255,0.5)'
-            ctx.fillText('github.com/vignesh2027', w / 2, 104)
+            this.roundRect(ctx, 50, 222, w - 100, 38, 19)
+            ctx.fillStyle = 'rgba(232,160,32,0.12)'; ctx.fill()
+            ctx.strokeStyle = 'rgba(232,160,32,0.4)'; ctx.lineWidth = 1; ctx.stroke()
+            ctx.font = '600 14px sans-serif'; ctx.fillStyle = '#FFF5E0'
+            ctx.fillText('🎓 Takshashila University · 2022–26 · Chennai', w / 2, 246)
 
-            ctx.strokeStyle = 'rgba(0,255,136,0.35)'
-            ctx.lineWidth = 1.5
-            ctx.beginPath(); ctx.moveTo(30, 120); ctx.lineTo(w - 30, 120); ctx.stroke()
+            ctx.strokeStyle = 'rgba(232,160,32,0.3)'; ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(30, 270); ctx.lineTo(w - 30, 270); ctx.stroke()
 
-            // Stats cards
+            const bio = ['Building systems that matter —', 'RAG Pipelines · Rust Systems · Cloud (AWS/GCP)', '7 open-source projects shipped']
+            ctx.font = '400 14px sans-serif'; ctx.fillStyle = 'rgba(255,245,224,0.85)'
+            bio.forEach((line, i) => ctx.fillText(line, w / 2, 292 + i * 26))
+
+            // Skill rows
+            const row1 = ['RAG / LLM', 'AWS / GCP', 'Rust', 'Python']
+            const row2 = ['C++', 'Flutter', 'FastAPI', 'Three.js']
+            ;[row1, row2].forEach((row, ri) => {
+                const rw = (w - 40) / row.length
+                row.forEach((t, ci) => {
+                    const bx = 20 + ci * rw, by = 374 + ri * 42
+                    this.roundRect(ctx, bx + 2, by, rw - 4, 34, 5)
+                    ctx.fillStyle = ri === 0 ? 'rgba(0,255,136,0.08)' : 'rgba(232,160,32,0.08)'; ctx.fill()
+                    ctx.strokeStyle = ri === 0 ? 'rgba(0,255,136,0.4)' : 'rgba(232,160,32,0.35)'; ctx.lineWidth = 1; ctx.stroke()
+                    ctx.font = '600 12px monospace'
+                    ctx.fillStyle = ri === 0 ? '#80FFB8' : '#FFF5E0'
+                    ctx.fillText(t, bx + rw / 2, by + 22)
+                })
+            })
+
+            ctx.font = '400 13px monospace'; ctx.fillStyle = 'rgba(232,160,32,0.75)'
+            ctx.fillText('🐙 github.com/vignesh2027', w / 2, 480)
+            ctx.fillText('🌐 vignesh2027.github.io/portfolio-vignesh', w / 2, 502)
+            ctx.font = 'italic 12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)'
+            ctx.fillText('click to open full profile', w / 2, h - 12)
+        }
+
+        // Build canvas & mesh
+        const aboutCanvas = document.createElement('canvas')
+        aboutCanvas.width = 512; aboutCanvas.height = 640
+        const aboutCtx = aboutCanvas.getContext('2d')
+        drawAbout(aboutCtx, 512, 640, null)   // draw with placeholder first
+
+        const aboutTex = new THREE.CanvasTexture(aboutCanvas)
+        aboutTex.colorSpace = THREE.SRGBColorSpace
+
+        // Load real photo and redraw
+        const img = new window.Image()
+        img.onload = () => {
+            drawAbout(aboutCtx, 512, 640, img)
+            aboutTex.needsUpdate = true
+        }
+        img.src = './vignesh.jpg'
+
+        const aboutBacking = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.4, 0.1), backingMat)
+        aboutBacking.position.set(-3.9, 2.6, FACADE_Z + 0.05)
+        this.scene.add(aboutBacking)
+
+        const aboutPanel = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.5, 3.2),
+            new THREE.MeshStandardMaterial({ map: aboutTex, emissive: 0x180800, emissiveIntensity: 0.15, roughness: 0.5 })
+        )
+        aboutPanel.position.set(-3.9, 2.6, FACADE_Z + 0.11)
+        aboutPanel.userData = { action: 'about', label: 'Vigneshwar L' }
+        this.scene.add(aboutPanel)
+        this.clickTargets.push(aboutPanel)
+
+        // ─ Right panel: GitHub Stats ─────────────────────
+        const gitTex = this.makeCanvasTexture(512, 640, (ctx, w, h) => {
+            ctx.fillStyle = '#050D08'; ctx.fillRect(0, 0, w, h)
+            ctx.strokeStyle = '#00FF88'; ctx.lineWidth = 3
+            ctx.strokeRect(4, 4, w - 8, h - 8)
+
+            ctx.font = '700 36px Georgia'; ctx.fillStyle = '#00FF88'
+            ctx.textAlign = 'center'
+            ctx.shadowColor = 'rgba(0,255,136,0.5)'; ctx.shadowBlur = 10
+            ctx.fillText('🐙 GitHub Stats', w / 2, 54); ctx.shadowBlur = 0
+            ctx.font = '400 16px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.45)'
+            ctx.fillText('github.com/vignesh2027', w / 2, 80)
+
+            ctx.strokeStyle = 'rgba(0,255,136,0.3)'; ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(24, 94); ctx.lineTo(w - 24, 94); ctx.stroke()
+
             ;[
-                { icon: '📦', val: '12+',  label: 'Public Repos',   color: '#FFD080' },
-                { icon: '⭐', val: '45+',  label: 'Stars Earned',   color: '#FFD080' },
-                { icon: '🟢', val: '200+', label: 'Contributions',  color: '#00FF88' },
-                { icon: '⌨',  val: '7',    label: 'Languages',      color: '#80C0FF' },
+                { icon: '📦', val: '12+', label: 'Repos',  color: '#FFD080' },
+                { icon: '⭐', val: '45+', label: 'Stars',   color: '#FFD080' },
+                { icon: '🟢', val: '200+', label: 'Commits', color: '#00FF88' },
+                { icon: '⌨',  val: '7',  label: 'Langs',   color: '#80C0FF' },
             ].forEach(({ icon, val, label, color }, i) => {
                 const col = i % 2, row = Math.floor(i / 2)
-                const cx = 30 + col * 330, cy = 140 + row * 140
-                this.roundRect(ctx, cx, cy, 310, 120, 12)
+                const cx = 20 + col * 238, cy = 108 + row * 110
+                this.roundRect(ctx, cx, cy, 218, 94, 10)
                 ctx.fillStyle = 'rgba(0,255,136,0.05)'; ctx.fill()
                 ctx.strokeStyle = 'rgba(0,255,136,0.2)'; ctx.lineWidth = 1; ctx.stroke()
-                ctx.font = '34px sans-serif'; ctx.textAlign = 'center'
-                ctx.fillText(icon, cx + 60, cy + 55)
-                ctx.font = '700 36px Georgia'; ctx.fillStyle = color
-                ctx.fillText(val, cx + 180, cy + 55)
-                ctx.font = '400 14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)'
-                ctx.fillText(label, cx + 155, cy + 80)
+                ctx.font = '26px sans-serif'; ctx.fillText(icon, cx + 44, cy + 44)
+                ctx.font = '700 28px Georgia'; ctx.fillStyle = color
+                ctx.fillText(val, cx + 140, cy + 44)
+                ctx.font = '400 12px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)'
+                ctx.fillText(label, cx + 130, cy + 66)
             })
 
-            // Language breakdown
-            ctx.font = '600 20px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.8)'
-            ctx.textAlign = 'left'; ctx.fillText('Language Breakdown', 30, 450)
+            ctx.font = '600 15px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.7)'
+            ctx.textAlign = 'left'; ctx.fillText('Language Breakdown', 24, 342)
 
             const langs = [
-                { name: 'Rust',       pct: 35, color: '#FF6B35' },
-                { name: 'Python',     pct: 28, color: '#3776AB' },
-                { name: 'Dart',       pct: 18, color: '#00B4D8' },
-                { name: 'C++',        pct: 12, color: '#00599C' },
-                { name: 'JavaScript', pct:  7, color: '#F7DF1E' },
+                { name: 'Rust', pct: 35, color: '#FF6B35' },
+                { name: 'Python', pct: 28, color: '#3776AB' },
+                { name: 'Dart', pct: 18, color: '#00B4D8' },
+                { name: 'C++', pct: 12, color: '#00599C' },
+                { name: 'JavaScript', pct: 7, color: '#F7DF1E' },
             ]
             langs.forEach(({ name, pct, color }, i) => {
-                const y = 476 + i * 52
-                ctx.fillStyle = 'rgba(255,255,255,0.7)'
-                ctx.font = '400 16px monospace'; ctx.textAlign = 'left'
-                ctx.fillText(name, 30, y + 14)
-                ctx.fillStyle = 'rgba(255,255,255,0.12)'
-                this.roundRect(ctx, 180, y, 480, 22, 4); ctx.fill()
+                const y = 360 + i * 42
+                ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.font = '400 13px monospace'
+                ctx.textAlign = 'left'; ctx.fillText(name, 24, y + 12)
+                ctx.fillStyle = 'rgba(255,255,255,0.1)'
+                this.roundRect(ctx, 140, y, 320, 18, 3); ctx.fill()
                 ctx.fillStyle = color
-                this.roundRect(ctx, 180, y, 480 * pct / 100, 22, 4); ctx.fill()
-                ctx.fillStyle = 'rgba(255,255,255,0.6)'
-                ctx.font = '400 13px monospace'; ctx.textAlign = 'right'
-                ctx.fillText(pct + '%', w - 30, y + 14)
+                this.roundRect(ctx, 140, y, 320 * pct / 100, 18, 3); ctx.fill()
+                ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '400 11px monospace'
+                ctx.textAlign = 'right'; ctx.fillText(pct + '%', w - 20, y + 12)
             })
 
-            // Contribution heatmap
-            ctx.font = '600 18px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.7)'
-            ctx.textAlign = 'left'; ctx.fillText('Activity Heatmap (last 6 months)', 30, 748)
-            for (let c = 0; c < 52; c++) {
+            ctx.font = '600 14px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.6)'
+            ctx.textAlign = 'left'; ctx.fillText('Activity Heatmap', 24, 582)
+            for (let c = 0; c < 46; c++) {
                 for (let r = 0; r < 7; r++) {
                     const v = Math.random()
-                    const g = 30 + Math.floor(v * 190)
-                    ctx.fillStyle = `rgba(0,${g},${Math.floor(g * 0.5)},${0.2 + v * 0.8})`
-                    this.roundRect(ctx, 30 + c * 12, 764 + r * 12, 10, 10, 2)
+                    const g = 30 + Math.floor(v * 180)
+                    ctx.fillStyle = `rgba(0,${g},${Math.floor(g * 0.4)},${0.2 + v * 0.8})`
+                    this.roundRect(ctx, 24 + c * 10, 594 + r * 10, 8, 8, 2)
                     ctx.fill()
                 }
             }
 
-            ctx.font = 'italic 16px sans-serif'; ctx.fillStyle = 'rgba(0,255,136,0.5)'
-            ctx.textAlign = 'center'
-            ctx.fillText('click inside to explore projects →', w / 2, h - 18)
+            ctx.font = 'italic 13px sans-serif'; ctx.fillStyle = 'rgba(0,255,136,0.4)'
+            ctx.textAlign = 'center'; ctx.fillText('click to explore GitHub', w / 2, h - 14)
         })
 
-        const board = new THREE.Mesh(
-            new THREE.PlaneGeometry(3.3, 4.4),
-            new THREE.MeshStandardMaterial({ map: tex, emissive: 0x001008, emissiveIntensity: 0.2, roughness: 0.5 })
-        )
-        board.position.set(POST_X, 2.8, POST_Z - 0.1)
-        board.userData = { action: 'rightWall', label: 'Git Stats' }
-        this.scene.add(board)
-        this.clickTargets.push(board)
+        const gitBacking = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.4, 0.1), backingMat)
+        gitBacking.position.set(3.9, 2.6, FACADE_Z + 0.05)
+        this.scene.add(gitBacking)
 
-        // Billboard light
-        const bLight = new THREE.PointLight(0x00FF88, 0.5, 5, 2)
-        bLight.position.set(POST_X + 1.5, 4.5, POST_Z - 1)
-        this.scene.add(bLight)
+        const gitPanel = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.5, 3.2),
+            new THREE.MeshStandardMaterial({ map: gitTex, emissive: 0x001008, emissiveIntensity: 0.15, roughness: 0.5 })
+        )
+        gitPanel.position.set(3.9, 2.6, FACADE_Z + 0.11)
+        gitPanel.userData = { action: 'gitStats', label: 'GitHub Stats' }
+        this.scene.add(gitPanel)
+        this.clickTargets.push(gitPanel)
     }
 
-    // ── About me billboard (right, outside) ───────────
-    buildAboutMeBillboard() {
-        const POST_X = 10, POST_Z = 14
 
-        // Posts
-        const poleMat = new THREE.MeshStandardMaterial({ color: 0x282828, roughness: 0.6, metalness: 0.7 })
-        ;[-1.2, 1.2].forEach(dx => {
-            const p = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 6.0, 10), poleMat)
-            p.position.set(POST_X + dx, 2.18, POST_Z)
-            this.scene.add(p)
-        })
-        const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.0, 8), poleMat)
-        bar.rotation.z = Math.PI / 2
-        bar.position.set(POST_X, 5.3, POST_Z)
-        this.scene.add(bar)
-
-        // Backing
-        const backing = new THREE.Mesh(
-            new THREE.BoxGeometry(3.6, 4.8, 0.18),
-            new THREE.MeshStandardMaterial({ color: 0x0E0A04, roughness: 0.7 })
-        )
-        backing.position.set(POST_X, 2.8, POST_Z)
-        this.scene.add(backing)
-
-        const tex = this.makeCanvasTexture(720, 960, (ctx, w, h) => {
-            const bg = ctx.createLinearGradient(0, 0, 0, h)
-            bg.addColorStop(0, '#1A0A00'); bg.addColorStop(1, '#0A0500')
-            ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h)
-
-            // Avatar circle
-            const av = ctx.createRadialGradient(w / 2, 110, 10, w / 2, 110, 90)
-            av.addColorStop(0, '#F5C040'); av.addColorStop(1, '#8B2500')
-            ctx.beginPath(); ctx.arc(w / 2, 110, 90, 0, Math.PI * 2)
-            ctx.fillStyle = av; ctx.fill()
-            ctx.strokeStyle = '#E8A020'; ctx.lineWidth = 5; ctx.stroke()
-            ctx.font = '700 80px Georgia, serif'; ctx.fillStyle = '#FFFAF3'
-            ctx.textAlign = 'center'; ctx.fillText('V', w / 2, 142)
-
-            // Name
-            ctx.font = '700 54px Georgia, serif'; ctx.fillStyle = '#FFF5E0'
-            ctx.shadowColor = 'rgba(232,160,32,0.6)'; ctx.shadowBlur = 10
-            ctx.fillText('Vignesh S', w / 2, 258)
-            ctx.shadowBlur = 0
-
-            ctx.font = 'italic 22px Georgia'; ctx.fillStyle = '#E8A020'
-            ctx.fillText('CS Student · Builder · Chennai', w / 2, 296)
-
-            // University badge
-            this.roundRect(ctx, 120, 318, w - 240, 52, 26)
-            ctx.fillStyle = 'rgba(232,160,32,0.15)'; ctx.fill()
-            ctx.strokeStyle = 'rgba(232,160,32,0.5)'; ctx.lineWidth = 1.5; ctx.stroke()
-            ctx.font = '600 20px sans-serif'; ctx.fillStyle = '#FFF5E0'
-            ctx.fillText('🎓  Takshashila University  2022–26', w / 2, 350)
-
-            ctx.strokeStyle = 'rgba(232,160,32,0.3)'; ctx.lineWidth = 1
-            ctx.beginPath(); ctx.moveTo(40, 386); ctx.lineTo(w - 40, 386); ctx.stroke()
-
-            // Bio
-            const bioL = [
-                'Building systems that matter —',
-                'Rust KV stores · Flutter ICU apps',
-                'RAG pipelines · 3D immersive worlds',
-                '',
-                '7 open source projects shipped',
-                'Systems · AI/ML · Creative Tech',
-            ]
-            ctx.font = '400 19px sans-serif'; ctx.fillStyle = 'rgba(255,245,224,0.78)'
-            bioL.forEach((line, i) => ctx.fillText(line, w / 2, 418 + i * 30))
-
-            ctx.strokeStyle = 'rgba(232,160,32,0.2)'; ctx.lineWidth = 1
-            ctx.beginPath(); ctx.moveTo(40, 608); ctx.lineTo(w - 40, 608); ctx.stroke()
-
-            // Skills tags
-            const skills = ['Rust', 'Python', 'C++', 'Flutter', 'Three.js', 'FastAPI', 'Raft', 'FAISS']
-            skills.forEach((sk, i) => {
-                const col = i % 4, row = Math.floor(i / 4)
-                const bx = 30 + col * 166, by = 624 + row * 56
-                this.roundRect(ctx, bx, by, 148, 40, 6)
-                ctx.fillStyle = 'rgba(232,160,32,0.12)'; ctx.fill()
-                ctx.strokeStyle = 'rgba(232,160,32,0.35)'; ctx.lineWidth = 1; ctx.stroke()
-                ctx.font = '600 16px monospace'; ctx.fillStyle = '#FFF5E0'; ctx.textAlign = 'center'
-                ctx.fillText(sk, bx + 74, by + 26)
-            })
-
-            // Social links
-            ctx.textAlign = 'center'
-            ;[
-                { icon: '🐙', label: 'github.com/vignesh2027', y: 780 },
-                { icon: '💼', label: 'linkedin.com/in/vigneshwar-s', y: 820 },
-                { icon: '📧', label: 'applemacbook6sep2004@gmail.com', y: 860 },
-                { icon: '🌐', label: 'vignesh2027.github.io/portfolio-vignesh', y: 900 },
-            ].forEach(({ icon, label, y }) => {
-                ctx.font = '400 16px monospace'; ctx.fillStyle = 'rgba(232,160,32,0.8)'
-                ctx.fillText(`${icon}  ${label}`, w / 2, y)
-            })
-
-            ctx.font = 'italic 16px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)'
-            ctx.fillText('click to open full profile →', w / 2, h - 18)
-        })
-
-        const board = new THREE.Mesh(
-            new THREE.PlaneGeometry(3.3, 4.4),
-            new THREE.MeshStandardMaterial({ map: tex, emissive: 0x180800, emissiveIntensity: 0.18, roughness: 0.5 })
-        )
-        board.position.set(POST_X, 2.8, POST_Z - 0.1)
-        board.userData = { action: 'about', label: 'About Vignesh' }
-        this.scene.add(board)
-        this.clickTargets.push(board)
-
-        // Billboard light
-        const bLight = new THREE.PointLight(0xFFAA40, 0.5, 5, 2)
-        bLight.position.set(POST_X - 1.5, 4.5, POST_Z - 1)
-        this.scene.add(bLight)
-    }
 
     // ── Opposite shop / mall ───────────────────────────
     buildOppositeShop() {
-        const BW = 26     // building half-width
-        const BH = OPP_H  // height above floor
-        const BD = OPP_BACK - OPP_Z  // depth
+        const BW = 26
+        const BH = OPP_H
+        const BD = OPP_BACK - OPP_Z
 
-        // Main structure
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x1A1A2E, roughness: 0.7, metalness: 0.1 })
-        const building = new THREE.Mesh(new THREE.BoxGeometry(BW * 2, BH, BD), wallMat)
+        // Main box
+        const building = new THREE.Mesh(
+            new THREE.BoxGeometry(BW * 2, BH, BD),
+            new THREE.MeshStandardMaterial({ color: 0x1A1A2E, roughness: 0.7, metalness: 0.1 })
+        )
         building.position.set(0, BH / 2 - 0.82, OPP_Z + BD / 2)
-        building.receiveShadow = true
         this.scene.add(building)
 
-        // Glass facade (ground floor, facing street)
-        const glassFacade = new THREE.Mesh(
-            new THREE.PlaneGeometry(BW * 2 - 2, 4.2),
-            new THREE.MeshStandardMaterial({
-                color: 0x1A3A5C, emissive: 0x0A1A30, emissiveIntensity: 0.4,
-                transparent: true, opacity: 0.75, roughness: 0.05, metalness: 0.2
+        // Full facade — one canvas covers ground glass + upper windows + sign
+        const facadeTex = this.makeCanvasTexture(1024, 768, (ctx, w, h) => {
+            // Background
+            ctx.fillStyle = '#0E0E20'; ctx.fillRect(0, 0, w, h)
+
+            // Ground floor glass panels
+            const glassH = Math.round(h * 0.46)
+            const items = [
+                { title: 'NEW ARRIVAL', text: 'M4 MacBook Pro', price: '₹2,49,900', color: '#A0C0FF' },
+                { title: 'BEST SELLER', text: 'RTX 5090 GPU',   price: '₹1,80,000', color: '#FFD080' },
+                { title: 'TRENDING',    text: 'LLM Dev Kit',     price: '₹49,999',   color: '#80FF88' },
+                { title: 'COMING SOON', text: 'Quantum Kit',     price: 'Pre-order',  color: '#FF8080' },
+            ]
+            const pw = w / items.length
+            items.forEach(({ title, text, price, color }, i) => {
+                const x = i * pw
+                const grd = ctx.createLinearGradient(x, 0, x + pw, glassH)
+                grd.addColorStop(0, 'rgba(26,58,92,0.9)')
+                grd.addColorStop(1, 'rgba(10,24,48,0.85)')
+                ctx.fillStyle = grd; ctx.fillRect(x, 0, pw, glassH)
+                ctx.strokeStyle = 'rgba(100,140,200,0.4)'; ctx.lineWidth = 1
+                ctx.strokeRect(x + 2, 2, pw - 4, glassH - 4)
+                ctx.font = '700 18px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = color
+                ctx.fillText(title, x + pw / 2, 36)
+                ctx.font = '400 22px sans-serif'; ctx.fillStyle = '#FFF'
+                ctx.fillText(text, x + pw / 2, 80)
+                ctx.font = '700 20px monospace'; ctx.fillStyle = color
+                ctx.fillText(price, x + pw / 2, 116)
             })
-        )
-        glassFacade.position.set(0, 1.28, OPP_Z + 0.01)
-        this.scene.add(glassFacade)
+            // Horizontal divider
+            ctx.fillStyle = 'rgba(60,60,80,0.8)'; ctx.fillRect(0, glassH, w, 8)
 
-        // Interior glow behind glass
-        const interiorGlow = new THREE.Mesh(
-            new THREE.PlaneGeometry(BW * 2 - 4, 3.8),
-            new THREE.MeshStandardMaterial({ color: 0xFFEECC, emissive: 0xFFDDA0, emissiveIntensity: 0.25 })
-        )
-        interiorGlow.position.set(0, 1.28, OPP_Z + 0.3)
-        this.scene.add(interiorGlow)
-
-        // Window grid — upper 2 floors
-        const windowMat = new THREE.MeshStandardMaterial({
-            color: 0x2040A0, emissive: 0x0A1850, emissiveIntensity: 0.6,
-            transparent: true, opacity: 0.88, roughness: 0.05
-        })
-        const darkWindowMat = new THREE.MeshStandardMaterial({
-            color: 0x0A1020, emissive: 0x050810, emissiveIntensity: 0.1,
-            transparent: true, opacity: 0.9, roughness: 0.1
-        })
-        const frameMat = new THREE.MeshStandardMaterial({ color: 0x303040, roughness: 0.6, metalness: 0.5 })
-
-        for (let floor = 0; floor < 2; floor++) {
-            for (let col = 0; col < 8; col++) {
-                const wx = -BW + 2.5 + col * 6.0
-                const wy = 4.2 + floor * 2.2
-                const isLit = Math.random() > 0.3
-                const win = new THREE.Mesh(
-                    new THREE.PlaneGeometry(4.0, 1.8),
-                    (isLit ? windowMat : darkWindowMat).clone()
-                )
-                win.position.set(wx, wy, OPP_Z + 0.05)
-                this.scene.add(win)
-                // Frame
-                const frame = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.95, 0.08), frameMat)
-                frame.position.set(wx, wy, OPP_Z + 0.02)
-                this.scene.add(frame)
+            // Upper floors — window grid
+            const winRows = 2, winCols = 8
+            const upperH = h - glassH - 8 - 60
+            const upperY = glassH + 8
+            const ww = w / winCols, wh = upperH / winRows
+            for (let r = 0; r < winRows; r++) {
+                for (let c = 0; c < winCols; c++) {
+                    const wx = c * ww, wy = upperY + r * wh
+                    const lit = Math.random() > 0.3
+                    const g = ctx.createLinearGradient(wx, wy, wx + ww, wy + wh)
+                    if (lit) {
+                        g.addColorStop(0, 'rgba(40,70,180,0.85)')
+                        g.addColorStop(1, 'rgba(20,40,130,0.9)')
+                    } else {
+                        g.addColorStop(0, 'rgba(8,12,28,0.95)')
+                        g.addColorStop(1, 'rgba(5,8,20,0.98)')
+                    }
+                    ctx.fillStyle = g
+                    ctx.fillRect(wx + 6, wy + 6, ww - 12, wh - 12)
+                    ctx.strokeStyle = 'rgba(60,60,80,0.6)'; ctx.lineWidth = 1
+                    ctx.strokeRect(wx, wy, ww, wh)
+                }
             }
-        }
 
-        // Facade window dividers (glass grid lines)
-        const divMat = new THREE.MeshStandardMaterial({ color: 0x404050, roughness: 0.5, metalness: 0.6 })
-        for (let i = -4; i <= 4; i++) {
-            const v = new THREE.Mesh(new THREE.BoxGeometry(0.06, 4.2, 0.05), divMat)
-            v.position.set(i * 3.0, 1.28, OPP_Z + 0.03)
-            this.scene.add(v)
-        }
-        for (let j = 0; j < 3; j++) {
-            const h = new THREE.Mesh(new THREE.BoxGeometry(BW * 2 - 2, 0.06, 0.05), divMat)
-            h.position.set(0, 0.1 + j * 1.36, OPP_Z + 0.03)
-            this.scene.add(h)
-        }
-
-        // Roof sign board
-        const roofSign = new THREE.Mesh(
-            new THREE.BoxGeometry(BW * 2 - 2, 1.8, 0.35),
-            new THREE.MeshStandardMaterial({ color: 0x0A0A16, roughness: 0.6 })
-        )
-        roofSign.position.set(0, BH - 0.82 + 0.9, OPP_Z + 0.18)
-        this.scene.add(roofSign)
-
-        const signTex = this.makeCanvasTexture(1920, 192, (ctx, w, h) => {
-            ctx.fillStyle = '#05050E'
-            ctx.fillRect(0, 0, w, h)
-            // Neon effect text
-            ctx.font = '700 88px "Georgia", serif'
-            ctx.textAlign = 'center'
-            ctx.shadowColor = '#6060FF'
-            ctx.shadowBlur = 28
-            ctx.fillStyle = '#A0A0FF'
-            ctx.fillText('⚡  CYBER MART  ⚡', w / 2, 128)
+            // Sign band at top
+            ctx.fillStyle = '#05050E'; ctx.fillRect(0, h - 60, w, 60)
+            ctx.font = '700 36px Georgia'; ctx.textAlign = 'center'
+            ctx.shadowColor = '#6060FF'; ctx.shadowBlur = 14
+            ctx.fillStyle = '#A0A0FF'; ctx.fillText('⚡  CYBER MART  ⚡', w / 2, h - 26)
             ctx.shadowBlur = 0
-            ctx.font = '400 28px monospace'
-            ctx.fillStyle = 'rgba(100,100,255,0.55)'
-            ctx.fillText('Tech · Electronics · Innovation · Open 24/7', w / 2, 170)
+            ctx.font = '400 14px monospace'; ctx.fillStyle = 'rgba(100,100,255,0.55)'
+            ctx.fillText('Tech · Electronics · Innovation · Open 24/7', w / 2, h - 8)
         })
-        const signPanel = new THREE.Mesh(
-            new THREE.PlaneGeometry(BW * 2 - 2.5, 1.65),
-            new THREE.MeshStandardMaterial({ map: signTex, emissive: 0x050518, emissiveIntensity: 0.8, roughness: 0.05 })
+
+        const facade = new THREE.Mesh(
+            new THREE.PlaneGeometry(BW * 2, BH),
+            new THREE.MeshStandardMaterial({ map: facadeTex, emissive: 0x050518, emissiveIntensity: 0.15, roughness: 0.3 })
         )
-        signPanel.position.set(0, BH - 0.82 + 0.9, OPP_Z + 0.37)
-        this.scene.add(signPanel)
+        facade.position.set(0, BH / 2 - 0.82, OPP_Z + 0.06)
+        this.scene.add(facade)
 
-        // Sign neon glow
-        const signLight = new THREE.PointLight(0x6060FF, 1.2, 10, 1.8)
-        signLight.position.set(0, BH - 0.82 + 2, OPP_Z + 1)
-        this.scene.add(signLight)
-
-        // Display windows (ground floor, 4 panels)
-        const displayItems = [
-            { title: 'NEW ARRIVAL', text: 'M4 MacBook Pro\n₹2,49,900', color: '#A0C0FF' },
-            { title: 'BEST SELLER', text: 'RTX 5090 GPU\n₹1,80,000',  color: '#FFD080' },
-            { title: 'TRENDING',    text: 'LLM Dev Kit\n₹49,999',     color: '#80FF88' },
-            { title: 'COMING SOON', text: 'Quantum Kit\nPre-order',   color: '#FF8080' },
-        ]
-        displayItems.forEach(({ title, text, color }, i) => {
-            const dx = -9 + i * 6
-            const dispTex = this.makeCanvasTexture(200, 300, (ctx, w, h) => {
-                ctx.fillStyle = '#080812'
-                ctx.fillRect(0, 0, w, h)
-                ctx.font = '700 18px monospace'; ctx.textAlign = 'center'
-                ctx.fillStyle = color; ctx.fillText(title, w / 2, 40)
-                ctx.strokeStyle = color; ctx.lineWidth = 1
-                ctx.beginPath(); ctx.moveTo(20, 54); ctx.lineTo(w - 20, 54); ctx.stroke()
-                ctx.font = '400 22px sans-serif'; ctx.fillStyle = '#FFFFFF'
-                text.split('\n').forEach((line, li) => {
-                    ctx.fillText(line, w / 2, 100 + li * 34)
-                })
-                // Price tag style
-                ctx.font = '600 14px monospace'; ctx.fillStyle = color
-                ctx.fillText('⟶ tap to explore', w / 2, h - 20)
-            })
-            const disp = new THREE.Mesh(
-                new THREE.PlaneGeometry(4.8, 3.6),
-                new THREE.MeshStandardMaterial({ map: dispTex, emissive: 0x030308, emissiveIntensity: 0.3 })
-            )
-            disp.position.set(dx, 1.5, OPP_Z + 0.35)
-            this.scene.add(disp)
-        })
-
-        // Entry arch
+        // Entry arch (3 meshes — kept minimal)
         const archMat = new THREE.MeshStandardMaterial({ color: 0x2A2A3A, roughness: 0.5, metalness: 0.5 })
         ;[-1, 1].forEach(side => {
             const col = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4.4, 0.5), archMat)
-            col.position.set(side * 2.5, 1.38, OPP_Z + 0.26)
+            col.position.set(side * 2.5, 1.38, OPP_Z + 0.28)
             this.scene.add(col)
         })
         const archTop = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.4, 0.5), archMat)
-        archTop.position.set(0, 3.78, OPP_Z + 0.26)
+        archTop.position.set(0, 3.78, OPP_Z + 0.28)
         this.scene.add(archTop)
 
-        // Floor connection (building floor extending back)
-        const buildFloor = new THREE.Mesh(
-            new THREE.PlaneGeometry(BW * 2, BD),
-            new THREE.MeshStandardMaterial({ color: 0x1A1820, roughness: 0.6 })
-        )
-        buildFloor.rotation.x = -Math.PI / 2
-        buildFloor.position.set(0, -0.81, OPP_Z + BD / 2)
-        this.scene.add(buildFloor)
-
-        // Decorative globe/sphere near entrance
-        const globeMat = new THREE.MeshStandardMaterial({
-            color: 0x3040A0, emissive: 0x101850, emissiveIntensity: 0.5,
-            transparent: true, opacity: 0.85, roughness: 0.05, metalness: 0.3
-        })
-        const globe = new THREE.Mesh(new THREE.SphereGeometry(0.8, 20, 16), globeMat)
-        globe.position.set(0, 0.82, OPP_Z + 1.5)
-        this.scene.add(globe)
-
-        // Side buildings (background depth)
+        // Side buildings (simple boxes only — no individual windows)
         ;[-1, 1].forEach(side => {
             const sideB = new THREE.Mesh(
-                new THREE.BoxGeometry(8, 6 + Math.random() * 3, 12),
+                new THREE.BoxGeometry(8, 7, 12),
                 new THREE.MeshStandardMaterial({ color: 0x141420, roughness: 0.8 })
             )
-            sideB.position.set(side * (BW + 4 + 4), 2.18, OPP_Z + 6)
+            sideB.position.set(side * (BW + 8), 2.68, OPP_Z + 6)
             this.scene.add(sideB)
-            // Random lit windows on side buildings
-            for (let wf = 0; wf < 3; wf++) {
-                for (let wc = 0; wc < 3; wc++) {
-                    if (Math.random() > 0.5) {
-                        const sWin = new THREE.Mesh(
-                            new THREE.PlaneGeometry(1.2, 0.8),
-                            new THREE.MeshStandardMaterial({
-                                color: 0x2040A0, emissive: 0x1020A0, emissiveIntensity: 0.6
-                            })
-                        )
-                        sWin.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2
-                        sWin.position.set(side * (BW + 0.1), 1.0 + wf * 1.8, OPP_Z + 2 + wc * 3.5)
-                        this.scene.add(sWin)
-                    }
-                }
-            }
         })
     }
 
     // ── Rain particle system ───────────────────────────
     buildRain() {
-        const COUNT   = 4000
+        const COUNT   = 500
         const positions  = new Float32Array(COUNT * 3)
         const velocities = new Float32Array(COUNT)
 
@@ -2303,37 +2131,30 @@ export default class TeaKadai {
         this.lanterns.forEach((l, i) => {
             l.rotation.z = Math.sin(elapsedTime * 0.45 + i * 1.9) * 0.016
         })
-        // Fan rotation
-        if (this.fanBlades) {
-            this.fanBlades.rotation.y += 0.008
-        }
-        // Star twinkle
-        if (this.stars) {
-            this.stars.material.opacity = 0.7 + Math.sin(elapsedTime * 0.35) * 0.1
-        }
-        // Rain animation
+
+        // Rain animation — skip every other frame to halve GPU upload cost
         if (this.rain && this.rainVelocities) {
-            const pos = this.rain.geometry.attributes.position
-            for (let i = 0; i < this.rainVelocities.length; i++) {
-                pos.array[i * 3 + 1] -= this.rainVelocities[i]
-                // Slight wind drift
-                pos.array[i * 3]     += 0.005
-                if (pos.array[i * 3 + 1] < -0.82) {
-                    pos.array[i * 3 + 1] = 18 + Math.random() * 6
-                    pos.array[i * 3]     = (Math.random() - 0.5) * 44
+            this._rainFrame = (this._rainFrame || 0) + 1
+            if (this._rainFrame % 2 === 0) {
+                const pos = this.rain.geometry.attributes.position
+                const arr = pos.array
+                for (let i = 0; i < this.rainVelocities.length; i++) {
+                    arr[i * 3 + 1] -= this.rainVelocities[i] * 2  // 2× step compensates skip
+                    arr[i * 3]     += 0.01
+                    if (arr[i * 3 + 1] < -0.82) {
+                        arr[i * 3 + 1] = 18 + Math.random() * 6
+                        arr[i * 3]     = (Math.random() - 0.5) * 44
+                    }
                 }
+                pos.needsUpdate = true
             }
-            pos.needsUpdate = true
         }
-        // TV screen update (every ~0.5s)
-        const tvTick = Math.floor(elapsedTime * 2)
+
+        // TV screen — update every 8s (small texture, occasional update is fine)
+        const tvTick = Math.floor(elapsedTime * 0.125)
         if (tvTick !== this.lastTVUpdate) {
             this.lastTVUpdate = tvTick
             this.drawTVFrame(elapsedTime)
-        }
-        // TV light gentle flicker
-        if (this.tvLight) {
-            this.tvLight.intensity = 0.28 + Math.sin(elapsedTime * 8.1) * 0.04
         }
     }
 }

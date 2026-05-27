@@ -85,43 +85,118 @@ const PROJECTS = {
     },
 }
 
-const ABOUT_HTML = `
+const GIT_STATS_HTML = `
 <div class="info-panel">
-    <div class="ip-hero" style="background:linear-gradient(135deg,#1A0A00,#3D2210)">
-        <div class="ip-avatar">V</div>
-        <h2>Vignesh S</h2>
-        <p class="ip-role">CS Student · Chennai · Builder</p>
+    <div class="ip-hero" style="background:linear-gradient(135deg,#010D05,#032210)">
+        <h2 style="color:#00FF88">🐙 GitHub Stats</h2>
+        <p class="ip-role" style="color:rgba(0,255,136,0.7)">github.com/vignesh2027</p>
     </div>
     <div class="ip-body">
-        <p class="ip-bio">I build systems that matter — from distributed databases in Rust to Flutter apps for ICU patients, 7-layer RAG pipelines to immersive 3D worlds. Currently in 3rd year B.Tech Computer Science.</p>
+        <div class="contact-grid">
+            <div class="contact-card" style="border-color:rgba(0,255,136,0.3)">
+                <span class="cc-icon">📦</span>
+                <span class="cc-label">Public Repos</span>
+                <span class="cc-val" style="color:#FFD080">12+</span>
+            </div>
+            <div class="contact-card" style="border-color:rgba(0,255,136,0.3)">
+                <span class="cc-icon">⭐</span>
+                <span class="cc-label">Stars Earned</span>
+                <span class="cc-val" style="color:#FFD080">45+</span>
+            </div>
+            <div class="contact-card" style="border-color:rgba(0,255,136,0.3)">
+                <span class="cc-icon">🟢</span>
+                <span class="cc-label">Contributions</span>
+                <span class="cc-val" style="color:#00FF88">200+</span>
+            </div>
+            <div class="contact-card" style="border-color:rgba(0,255,136,0.3)">
+                <span class="cc-icon">⌨</span>
+                <span class="cc-label">Languages</span>
+                <span class="cc-val" style="color:#80C0FF">7</span>
+            </div>
+        </div>
+        <h3 style="color:#00FF88">Language Breakdown</h3>
+        ${[
+            { name: 'Rust', pct: 35, color: '#FF6B35' },
+            { name: 'Python', pct: 28, color: '#3776AB' },
+            { name: 'Dart/Flutter', pct: 18, color: '#00B4D8' },
+            { name: 'C++', pct: 12, color: '#00599C' },
+            { name: 'JavaScript', pct: 7, color: '#F7DF1E' },
+        ].map(l => `
+        <div style="margin:8px 0">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="color:rgba(255,255,255,0.75);font-family:monospace;font-size:13px">${l.name}</span>
+                <span style="color:rgba(255,255,255,0.5);font-size:12px">${l.pct}%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:10px">
+                <div style="background:${l.color};width:${l.pct}%;height:100%;border-radius:4px"></div>
+            </div>
+        </div>`).join('')}
+    </div>
+    <div class="ip-footer">
+        <a class="pd-link" href="https://github.com/vignesh2027" target="_blank">🐙 View GitHub Profile</a>
+    </div>
+</div>`
 
-        <h3>⚙ Technical Skills</h3>
+const ABOUT_HTML = `
+<div class="info-panel">
+    <div class="ip-hero" style="background:linear-gradient(135deg,#1A0A00,#3D2210);padding-top:24px">
+        <img src="./vignesh.jpg" alt="Vigneshwar L"
+             style="width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:top;
+                    border:3px solid #E8A020;display:block;margin:0 auto 12px;box-shadow:0 0 18px rgba(232,160,32,0.5)">
+        <h2>Vigneshwar L</h2>
+        <p class="ip-role">ML Researcher · Systems Builder · Cloud Engineer · Chennai</p>
+    </div>
+    <div class="ip-body">
+        <p class="ip-bio">I build systems that matter — from 7-layer RAG pipelines (VORTEXRAG) and distributed KV stores in Rust, to Flutter ICU apps and immersive 3D worlds. Passionate about ML research, cloud-native systems, and creative technology. Currently in 3rd year B.Tech Computer Science at Takshashila University.</p>
+
+        <h3>🤖 ML &amp; AI Research</h3>
+        <div class="tag-row">
+            <span class="tag" style="border-color:#00FF88;color:#00FF88">RAG Systems</span>
+            <span class="tag" style="border-color:#00FF88;color:#00FF88">LLM Orchestration</span>
+            <span class="tag" style="border-color:#00FF88;color:#00FF88">FAISS / Vector DBs</span>
+            <span class="tag" style="border-color:#00FF88;color:#00FF88">Multi-Agent AI</span>
+            <span class="tag" style="border-color:#00FF88;color:#00FF88">Semantic Search</span>
+            <span class="tag" style="border-color:#00FF88;color:#00FF88">NLP Pipelines</span>
+        </div>
+
+        <h3>☁ Cloud &amp; Infrastructure</h3>
+        <div class="tag-row">
+            <span class="tag" style="border-color:#4A90FF;color:#80B8FF">AWS</span>
+            <span class="tag" style="border-color:#4A90FF;color:#80B8FF">GCP</span>
+            <span class="tag" style="border-color:#4A90FF;color:#80B8FF">Docker</span>
+            <span class="tag" style="border-color:#4A90FF;color:#80B8FF">Kubernetes</span>
+            <span class="tag" style="border-color:#4A90FF;color:#80B8FF">Firebase</span>
+            <span class="tag" style="border-color:#4A90FF;color:#80B8FF">CI/CD</span>
+        </div>
+
+        <h3>⚙ Systems &amp; Languages</h3>
         <div class="tag-row">
             <span class="tag">Rust</span><span class="tag">Python</span><span class="tag">C++</span>
             <span class="tag">Dart/Flutter</span><span class="tag">JavaScript</span><span class="tag">Go</span>
         </div>
         <div class="tag-row" style="margin-top:8px">
-            <span class="tag">Three.js</span><span class="tag">FastAPI</span><span class="tag">Tokio</span>
-            <span class="tag">Firebase</span><span class="tag">Raft</span><span class="tag">FAISS</span>
+            <span class="tag">Raft Consensus</span><span class="tag">LSM Trees</span><span class="tag">gRPC</span>
+            <span class="tag">FastAPI</span><span class="tag">Three.js</span><span class="tag">Tokio</span>
         </div>
 
         <h3>🎓 Education</h3>
-        <p class="ip-item">B.Tech Computer Science Engineering<br><span class="ip-sub">Takshashila University · 2022 – 2026</span></p>
+        <p class="ip-item">B.Tech Computer Science Engineering<br><span class="ip-sub">Takshashila University · 2022 – 2026 · Chennai</span></p>
 
-        <h3>🧠 Interests</h3>
+        <h3>🧠 Research Interests</h3>
         <div class="tag-row">
-            <span class="tag">Systems Programming</span><span class="tag">AI/ML & RAG</span>
-            <span class="tag">3D Graphics</span><span class="tag">Distributed Systems</span>
-            <span class="tag">Healthcare Tech</span><span class="tag">Competitive Programming</span>
+            <span class="tag">RAG &amp; Retrieval Systems</span>
+            <span class="tag">Distributed Systems</span>
+            <span class="tag">Cloud-Native Architectures</span>
+            <span class="tag">Healthcare AI</span>
+            <span class="tag">Time-Series Databases</span>
+            <span class="tag">3D Graphics / WebGL</span>
         </div>
-
-        <h3>🎯 Hobbies</h3>
-        <p class="ip-item">Reading tech papers · Chess · Building side projects · Open-source contributions · Photography · Gaming</p>
     </div>
     <div class="ip-footer">
         <a class="pd-link" href="https://github.com/vignesh2027" target="_blank">🐙 GitHub</a>
         <a class="pd-link" href="mailto:applemacbook6sep2004@gmail.com" target="_blank">📧 Email</a>
         <a class="pd-link" href="https://linkedin.com/in/vigneshwar-s" target="_blank">💼 LinkedIn</a>
+        <a class="pd-link" href="https://dev.to/vignesh2027" target="_blank">✍ Dev.to</a>
         <a class="pd-link" href="https://vignesh2027.github.io/portfolio-vignesh" target="_blank">🌐 Portfolio</a>
     </div>
 </div>`
@@ -346,6 +421,8 @@ export default class Controller {
             this.openDetailOverlay(PROJECTS_LIST_HTML)
         } else if (action === 'about') {
             this.openDetailOverlay(ABOUT_HTML)
+        } else if (action === 'gitStats') {
+            this.openDetailOverlay(GIT_STATS_HTML)
         } else if (action === 'research') {
             this.openDetailOverlay(RESEARCH_HTML)
         } else if (action === 'contact') {
