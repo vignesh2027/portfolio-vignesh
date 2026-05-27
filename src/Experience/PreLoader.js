@@ -4,47 +4,55 @@ import Experience from './Experience.js'
 export default class PreLoader extends EventEmitter {
     constructor() {
         super()
-        this.experience = new Experience()
-
-        this.brewingEl      = document.getElementById('brewing')
-        this.progressEl     = document.getElementById('progressPercentage')
-        this.progressFill   = document.getElementById('brew-progress-fill')
-        this.startBtn       = document.querySelector('.start')
-        this.overlayEl      = document.querySelector('.overlay')
-        this.navEl          = document.getElementById('nav')
-        this.hintEl         = document.getElementById('hint')
-        this.shortcutsEl    = document.getElementById('shortcuts')
-
-        this.progress = 0
-        this.started  = false
+        this.experience    = new Experience()
+        this.brewingEl     = document.getElementById('brewing')
+        this.progressEl    = document.getElementById('progressPercentage')
+        this.progressFill  = document.getElementById('brew-fill')
+        this.startBtn      = document.querySelector('.start-btn')
+        this.overlayEl     = document.querySelector('.fade-overlay')
+        this.floatNav      = document.getElementById('float-nav')
+        this.hint3d        = document.getElementById('hint-3d')
+        this.scrollArrow   = document.getElementById('scroll-arrow')
+        this.shortcutsEl   = document.getElementById('shortcuts')
+        this.topbar        = document.getElementById('topbar')
+        this.progress      = 0
+        this.started       = false
 
         this.simulateLoading()
         this.setStartButton()
     }
 
     simulateLoading() {
+        const subtitles = ['Warming the stove', 'Boiling the water', 'Adding tea leaves', 'Brewing the kadai', 'Almost ready…']
+        const subEl = document.getElementById('brew-sub')
+        let si = 0
+
         const tick = () => {
             if (this.progress < 90) {
-                this.progress += 4 + Math.random() * 10
+                this.progress += 3 + Math.random() * 11
                 this.progress = Math.min(this.progress, 90)
                 this.updateProgress(this.progress)
-                setTimeout(tick, 80 + Math.random() * 100)
+                if (subEl && Math.floor(this.progress / 20) !== si) {
+                    si = Math.floor(this.progress / 20)
+                    subEl.textContent = subtitles[Math.min(si, subtitles.length - 1)]
+                }
+                setTimeout(tick, 70 + Math.random() * 110)
             } else {
-                // Brief pause then complete
                 setTimeout(() => {
                     this.progress = 100
                     this.updateProgress(100)
+                    if (subEl) subEl.textContent = 'Your table is ready ☕'
                     this.showStart()
                 }, 500)
             }
         }
-        setTimeout(tick, 200)
+        setTimeout(tick, 250)
     }
 
     updateProgress(pct) {
-        const rounded = Math.floor(pct)
-        if (this.progressEl)   this.progressEl.textContent = rounded
-        if (this.progressFill) this.progressFill.style.width = rounded + '%'
+        const r = Math.floor(pct)
+        if (this.progressEl)   this.progressEl.textContent = r
+        if (this.progressFill) this.progressFill.style.width = r + '%'
     }
 
     showStart() {
@@ -67,22 +75,22 @@ export default class PreLoader extends EventEmitter {
                 if (this.brewingEl) this.brewingEl.style.display = 'none'
             }, 600)
 
-            // Fade out dark overlay → reveal scene
+            // Fade out dark overlay → reveal 3D scene
             setTimeout(() => this.overlayEl?.classList.add('fade'), 200)
 
-            // Show nav + shortcuts after scene fades in
+            // Unlock scrolling and show all UI after reveal
             setTimeout(() => {
-                this.navEl?.classList.remove('hidden')
+                document.body.classList.add('entered')  // unlocks overflow
+
+                this.floatNav?.classList.remove('hidden')
+                this.scrollArrow?.classList.remove('hidden')
                 this.shortcutsEl?.classList.remove('hidden')
 
-                // Show hint briefly
-                if (this.hintEl) {
-                    this.hintEl.classList.remove('hidden')
-                    setTimeout(() => this.hintEl.classList.add('hidden'), 5000)
+                if (this.hint3d) {
+                    this.hint3d.classList.remove('hidden')
+                    setTimeout(() => this.hint3d.classList.add('hidden'), 6000)
                 }
-
-                // Hide shortcuts after a while
-                setTimeout(() => this.shortcutsEl?.classList.add('hidden'), 12000)
+                setTimeout(() => this.shortcutsEl?.classList.add('hidden'), 15000)
             }, 1400)
 
             this.trigger('start')

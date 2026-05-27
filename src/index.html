@@ -1,35 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="night">
 <head>
     <meta charset="UTF-8">
-    <title>Vignesh's Tea Kadai</title>
-    <meta name="description" content="Systems engineer & full-stack developer — Rust, Python, Flutter, Three.js." />
+    <title>Vignesh — Tea Kadai Portfolio</title>
+    <meta name="description" content="CS Student @ Chennai. ML & Cloud Engineer. Rust, Python, Three.js, Flutter. Building distributed systems, AI frameworks, and immersive 3D experiences." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta itemprop="name" content="Vignesh — Developer Portfolio">
-    <meta itemprop="description" content="Builder of distributed systems, AI frameworks, 3D experiences, and mobile apps.">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Vignesh's Tea Kadai — Portfolio">
-    <meta property="og:description" content="Systems engineer. Rust, Python, Flutter, Three.js.">
+    <meta property="og:title" content="Vignesh's Tea Kadai — Developer Portfolio">
+    <meta property="og:description" content="ML Engineer · Systems Builder · CS Student @ Chennai. 51 open-source projects.">
     <meta name="theme-color" content="#1a0e05">
 </head>
 <body>
 
-    <!-- Custom cursor -->
+    <!-- ── Cursor ──────────────────────────────────── -->
     <div id="cursor"></div>
     <div id="cursor-ring"></div>
 
-    <!-- Three.js canvas -->
+    <!-- ── Fixed 3D canvas (always behind) ────────── -->
     <canvas class="webgl"></canvas>
 
-    <!-- Fade overlay -->
-    <div class="overlay"></div>
+    <!-- ── Loading overlay ────────────────────────── -->
+    <div class="fade-overlay"></div>
 
-    <!-- ── Loading / Brewing Screen ─────────────────── -->
+    <!-- ── Brewing / Loading screen ───────────────── -->
     <div id="brewing">
-        <div class="steam"></div>
-        <div class="steam"></div>
-        <div class="steam"></div>
-        <div class="steam"></div>
+        <div class="steam"></div><div class="steam"></div>
+        <div class="steam"></div><div class="steam"></div>
         <div id="teacup-wrap">
             <div id="teacup">
                 <div id="cup-body"></div>
@@ -39,169 +34,998 @@
             <div id="cup-saucer"></div>
         </div>
         <h1>Brewing your experience… <span id="progressPercentage">0</span>%</h1>
-        <div id="brew-progress-bar">
-            <div id="brew-progress-fill"></div>
-        </div>
+        <div id="brew-bar"><div id="brew-fill"></div></div>
+        <p id="brew-sub">Rendering the Tea Kadai</p>
     </div>
 
-    <!-- Start button -->
-    <button class="start">ENTER KADAI</button>
+    <!-- ── START button ───────────────────────────── -->
+    <button class="start-btn">☕ ENTER KADAI</button>
 
-    <!-- Hint -->
-    <div id="hint" class="hint hidden">☞ Click on the boards &amp; signs to explore</div>
+    <!-- ═══════════════════════════════════════════ -->
+    <!--  SCROLLABLE PAGE WRAPPER                    -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="page">
 
-    <!-- ── Projects Overlay ──────────────────────────── -->
-    <div id="overlay-projects" class="overlay-panel hidden">
-        <div class="panel-header">
-            <h2 class="panel-title">☕ Projects</h2>
-            <button class="overlay-close" data-close="overlay-projects" aria-label="Close">✕</button>
-        </div>
-        <div class="panel-body">
-            <div class="projects-grid">
+        <!-- ── HERO (transparent — 3D shows through) ── -->
+        <section id="hero">
+            <!-- Top bar -->
+            <header id="topbar">
+                <div class="logo">
+                    <span class="logo-v">V</span>
+                    <span class="logo-text">Vignesh <em>·</em> Tea Kadai</span>
+                </div>
+                <nav class="topnav" id="topnav">
+                    <a href="#about"    class="tnav-link">About</a>
+                    <a href="#projects" class="tnav-link">Projects</a>
+                    <a href="#research" class="tnav-link">Research</a>
+                    <a href="#skills"   class="tnav-link">Skills</a>
+                    <a href="#hobbies"  class="tnav-link">Hobbies</a>
+                    <a href="#contact"  class="tnav-link">Contact</a>
+                </nav>
+                <div class="topbar-right">
+                    <button id="theme-toggle" class="theme-btn" title="Toggle day/night">
+                        <span class="theme-icon-night">🌙</span>
+                        <span class="theme-icon-day">☀️</span>
+                    </button>
+                    <a href="https://github.com/vignesh2027" target="_blank" class="gh-badge">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                        73 followers
+                    </a>
+                </div>
+            </header>
 
-                <a class="project-card" href="https://github.com/vignesh2027/Game-of-DSA" target="_blank" rel="noopener">
-                    <span class="tag cpp">C++ · Raylib</span>
-                    <h3>Game of DSA</h3>
-                    <p>A gamified Data Structures &amp; Algorithms experience. Solve DSA puzzles inside an interactive game world with visual feedback.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+            <!-- Hero centre content (visible over 3D) -->
+            <div class="hero-center">
+                <div id="hint-3d" class="hint-3d hidden">
+                    ☞ Click on signs &amp; boards · Scroll down to explore
+                </div>
+            </div>
 
-                <a class="project-card" href="https://github.com/vignesh2027/cosmic-intelligence" target="_blank" rel="noopener">
-                    <span class="tag js">Three.js · Firebase</span>
-                    <h3>NEXUS Cosmic Intelligence</h3>
-                    <p>Immersive WebGL universe for exploring global knowledge — news, research, and intelligence visualised across 3D space.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+            <!-- Scroll arrow -->
+            <div class="scroll-arrow hidden" id="scroll-arrow">
+                <span>Scroll to explore</span>
+                <div class="arrow-icon">↓</div>
+            </div>
+        </section>
 
-                <a class="project-card" href="https://github.com/vignesh2027/sparshcare" target="_blank" rel="noopener">
-                    <span class="tag flutter">Flutter · Firebase</span>
-                    <h3>SparshCare</h3>
-                    <p>ICU patient communication app — eye tracking, 4 languages, 6 communication cards, full admin panel. 50+ files.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+        <!-- ═══════════════════════════════════════ -->
+        <!-- ABOUT                                   -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="about" class="section">
+            <div class="container">
+                <div class="about-grid">
+                    <!-- Left — avatar & quick stats -->
+                    <div class="about-left fade-in">
+                        <div class="avatar-wrap">
+                            <div class="avatar">V</div>
+                            <div class="avatar-ring"></div>
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="quick-stats">
+                            <div class="stat-item">
+                                <span class="stat-n">51</span>
+                                <span class="stat-l">Public Repos</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-n">73</span>
+                                <span class="stat-l">Followers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-n">9★</span>
+                                <span class="stat-l">Top Repo</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-n">8+</span>
+                                <span class="stat-l">Languages</span>
+                            </div>
+                        </div>
+                        <div class="about-links">
+                            <a href="https://github.com/vignesh2027" target="_blank" class="link-pill gh">
+                                ⌥ github.com/vignesh2027
+                            </a>
+                            <a href="https://www.linkedin.com/in/vigneshwar-s" target="_blank" class="link-pill li">
+                                in LinkedIn
+                            </a>
+                            <a href="mailto:applemacbook6sep2004@gmail.com" class="link-pill em">
+                                ✉ Email
+                            </a>
+                            <a href="https://huggingface.co/vigneshwar234" target="_blank" class="link-pill hf">
+                                🤗 HuggingFace
+                            </a>
+                        </div>
+                    </div>
 
-                <a class="project-card" href="https://github.com/vignesh2027/synthron" target="_blank" rel="noopener">
-                    <span class="tag py">Python · AI</span>
-                    <h3>SYNTHRON</h3>
-                    <p>Multi-agent AI orchestration framework. Agents collaborate, delegate, and self-correct to tackle complex tasks end-to-end.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+                    <!-- Right — bio & details -->
+                    <div class="about-right fade-in">
+                        <div class="section-label">About Me</div>
+                        <h2 class="about-name">Vigneshwar <span class="name-accent">/ Vignesh</span></h2>
+                        <p class="about-loc">📍 Chennai, India &nbsp;·&nbsp; CS Student &nbsp;·&nbsp; Open to opportunities</p>
 
-                <a class="project-card" href="https://github.com/vignesh2027/VORTEXRAG" target="_blank" rel="noopener">
-                    <span class="tag py">Python · RAG</span>
-                    <h3>VORTEXRAG</h3>
-                    <p>Novel 7-layer RAG pipeline solving semantic drift and context poisoning. Production-grade retrieval architecture.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+                        <p class="about-bio">
+                            I'm a Computer Science student at Chennai passionate about building at the intersection of
+                            <strong>AI systems, distributed infrastructure, and immersive 3D web</strong>. I build things that are
+                            technically hard and genuinely useful — from production-grade LLM evaluation frameworks to
+                            ICU patient communication apps, Earth intelligence dashboards, and distributed databases in Rust.
+                        </p>
+                        <p class="about-bio">
+                            I love open-source, publish everything I build, and explore new architectures.
+                            Currently deep in multi-agent AI orchestration and novel ML architectures
+                            (TemporalMesh Transformer). If it's on the frontier, I want to build it.
+                        </p>
 
-                <a class="project-card" href="https://github.com/vignesh2027/rustkvd" target="_blank" rel="noopener">
-                    <span class="tag rust">Rust · Distributed</span>
-                    <h3>rustkvd</h3>
-                    <p>Distributed key-value store in Rust — Raft consensus, LSM tree storage engine, gRPC transport layer.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+                        <div class="about-tags">
+                            <span class="atag">🧠 ML &amp; Cloud</span>
+                            <span class="atag">⚙️ Systems Engineering</span>
+                            <span class="atag">🌐 3D Web / WebGL</span>
+                            <span class="atag">🤖 Multi-Agent AI</span>
+                            <span class="atag">📱 Mobile (Flutter)</span>
+                            <span class="atag">🦀 Rust Systems</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                <a class="project-card" href="https://github.com/vignesh2027/fluxdb" target="_blank" rel="noopener">
-                    <span class="tag rust">Rust · Systems</span>
-                    <h3>FluxDB</h3>
-                    <p>Time-series database built from scratch in Rust. Custom storage engine, query processor, and ingestion pipeline. 100+ tests.</p>
-                    <span class="card-link">View on GitHub</span>
-                </a>
+        <!-- ═══════════════════════════════════════ -->
+        <!-- FEATURED PROJECTS                       -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="projects" class="section section-alt">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Work</div>
+                    <h2 class="section-title">Featured Projects</h2>
+                    <p class="section-sub">Selected work from 51 open-source repositories</p>
+                </div>
+
+                <!-- Filter bar -->
+                <div class="filter-bar fade-in" id="filter-bar">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="ai">AI / ML</button>
+                    <button class="filter-btn" data-filter="systems">Systems</button>
+                    <button class="filter-btn" data-filter="3d">3D / Web</button>
+                    <button class="filter-btn" data-filter="apps">Apps</button>
+                </div>
+
+                <div class="featured-grid" id="featured-grid">
+
+                    <!-- ── LLM Evaluation Framework ── -->
+                    <article class="proj-card proj-big fade-in" data-cat="ai">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🧠</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 9</div>
+                                    <span class="lang-badge python">Python</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">LLM Evaluation Framework</h3>
+                            <p class="proj-desc">Production-grade LLM benchmarking platform evaluating GPT-4, Claude, Gemini, and Mistral across accuracy, latency, cost, hallucination rate, and reasoning quality metrics.</p>
+                            <div class="proj-chips">
+                                <span>GPT-4</span><span>Claude</span><span>Gemini</span><span>Mistral</span><span>Hallucination Detection</span><span>Benchmarking</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/LLM-Evaluation-Framework" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── TERRANOVA ── -->
+                    <article class="proj-card proj-big fade-in" data-cat="3d">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🌍</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 5</div>
+                                    <span class="lang-badge html">HTML/JS</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">TERRANOVA</h3>
+                            <p class="proj-desc">Real-time Earth intelligence dashboard combining Google Maps and NASA APIs with a cinematic Three.js intro. Live natural disaster events, asteroid radar, APOD, and EPIC satellite imagery.</p>
+                            <div class="proj-chips">
+                                <span>Three.js</span><span>Google Maps</span><span>NASA APIs</span><span>WebGL</span><span>Real-time</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/TERRANOVA" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── graphite-web ── -->
+                    <article class="proj-card fade-in" data-cat="systems">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">📊</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 5</div>
+                                    <span class="lang-badge html">HTML/JS</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">Graphite Web</h3>
+                            <p class="proj-desc">Advanced open-source metrics visualization platform. Real-time streaming, 3D topology view, AI anomaly detection — zero backend, runs entirely in browser.</p>
+                            <div class="proj-chips">
+                                <span>Real-time</span><span>AI Anomaly Detection</span><span>3D Topology</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/graphite-web-" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── SYNTHRON ── -->
+                    <article class="proj-card fade-in" data-cat="ai">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">⚡</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 4</div>
+                                    <span class="lang-badge python">Python</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">SYNTHRON</h3>
+                            <p class="proj-desc">Multi-agent AI orchestration framework that actually works. Agents collaborate, delegate tasks, self-correct, and handle complex workflows end-to-end.</p>
+                            <div class="proj-chips">
+                                <span>Multi-Agent</span><span>LLM</span><span>Orchestration</span><span>Self-healing</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/synthron" target="_blank" class="proj-link">GitHub ↗</a>
+                                <a href="https://vignesh2027.github.io/synthron" target="_blank" class="proj-link demo">Demo ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── rustkvd ── -->
+                    <article class="proj-card fade-in" data-cat="systems">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🦀</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 3</div>
+                                    <span class="lang-badge rust">Rust</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">rustkvd</h3>
+                            <p class="proj-desc">Production-grade distributed key-value store in Rust. Raft consensus, LSM storage engine, consistent hashing, MVCC, and gRPC transport.</p>
+                            <div class="proj-chips">
+                                <span>Raft</span><span>LSM Tree</span><span>gRPC</span><span>MVCC</span><span>Distributed</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/rustkvd" target="_blank" class="proj-link">GitHub ↗</a>
+                                <a href="https://vignesh2027.github.io/rustkvd" target="_blank" class="proj-link demo">Pages ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── GitHub Repo Analyzer ── -->
+                    <article class="proj-card fade-in" data-cat="apps">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🔍</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 2</div>
+                                    <span class="lang-badge js">JavaScript</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">GitHub Repo Analyzer</h3>
+                            <p class="proj-desc">Paste any GitHub URL — get an instant, beautiful intelligence report. No sign-up, no friction, no noise. Deep code insights in seconds.</p>
+                            <div class="proj-chips">
+                                <span>GitHub API</span><span>Analysis</span><span>Zero-friction</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/GitHub-Repo-Analyzer" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── VORTEXRAG ── -->
+                    <article class="proj-card fade-in" data-cat="ai">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🌀</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 1</div>
+                                    <span class="lang-badge python">Python</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">VORTEXRAG</h3>
+                            <p class="proj-desc">Novel 7-layer RAG pipeline solving semantic drift and context poisoning simultaneously. Production-grade retrieval — the only RAG architecture that kills both problems.</p>
+                            <div class="proj-chips">
+                                <span>RAG</span><span>Vector Search</span><span>Semantic Drift</span><span>LLM</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/VORTEXRAG" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── FluxDB ── -->
+                    <article class="proj-card fade-in" data-cat="systems">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">📈</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 1</div>
+                                    <span class="lang-badge rust">Rust</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">FluxDB</h3>
+                            <p class="proj-desc">Production-grade embeddable time-series DB from scratch in Rust. 2M+ writes/sec, 90% compression, sub-ms queries. Custom FluxQL language, HTTP API, Python bindings.</p>
+                            <div class="proj-chips">
+                                <span>2M+ writes/sec</span><span>FluxQL</span><span>Time-series</span><span>LSM</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/-FLUXDB" target="_blank" class="proj-link">GitHub ↗</a>
+                                <a href="https://vignesh2027.github.io/-FLUXDB" target="_blank" class="proj-link demo">Pages ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── NEXUS ── -->
+                    <article class="proj-card fade-in" data-cat="3d">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🌌</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 1</div>
+                                    <span class="lang-badge html">HTML/JS</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">NEXUS Cosmic Intelligence</h3>
+                            <p class="proj-desc">Living, breathing real-time 3D universe powered by global news intelligence. WebGL, Three.js, live API data — built entirely in the browser.</p>
+                            <div class="proj-chips">
+                                <span>Three.js</span><span>WebGL</span><span>News API</span><span>Real-time</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/3D-WEBSITE-COSMIC-SPACE-NEWS-" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── SparshCare ── -->
+                    <article class="proj-card fade-in" data-cat="apps">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">💙</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">❤ 0</div>
+                                    <span class="lang-badge dart">Flutter</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">SparshCare</h3>
+                            <p class="proj-desc">ICU patient communication app with eye tracking, 4 languages, 6 communication card types, full admin panel, and Firebase backend. 50+ file Flutter project.</p>
+                            <div class="proj-chips">
+                                <span>Eye Tracking</span><span>4 Languages</span><span>Firebase</span><span>Healthcare</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/sparsecare" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── Computer Vision Pipeline ── -->
+                    <article class="proj-card fade-in" data-cat="ai">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">👁</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 1</div>
+                                    <span class="lang-badge python">Python</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">Real-Time Object Intelligence</h3>
+                            <p class="proj-desc">Production-grade real-time object detection, tracking & analytics. YOLOv8 + ByteTrack + FastAPI WebSocket + Streamlit dashboard, heatmaps, line counting, zone analytics.</p>
+                            <div class="proj-chips">
+                                <span>YOLOv8</span><span>ByteTrack</span><span>FastAPI</span><span>WebSocket</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/Computer-Vision-Real-Time-Object-Intelligence" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- ── FLY-VIEW ── -->
+                    <article class="proj-card fade-in" data-cat="3d">
+                        <div class="proj-card-inner">
+                            <div class="proj-header">
+                                <div class="proj-icon">🌐</div>
+                                <div class="proj-meta">
+                                    <div class="proj-stars">★ 1</div>
+                                    <span class="lang-badge js">JavaScript</span>
+                                </div>
+                            </div>
+                            <h3 class="proj-title">FLY-VIEW</h3>
+                            <p class="proj-desc">Standalone client-side 3D intelligence globe on CesiumJS — photorealistic spinning Earth with three real-time data layers fused into a single cinematic interface.</p>
+                            <div class="proj-chips">
+                                <span>CesiumJS</span><span>3D Globe</span><span>Real-time Data</span>
+                            </div>
+                            <div class="proj-footer">
+                                <a href="https://github.com/vignesh2027/-FLY-VIEW" target="_blank" class="proj-link">GitHub ↗</a>
+                            </div>
+                        </div>
+                    </article>
+
+                </div><!-- /featured-grid -->
+
+                <!-- All repos link -->
+                <div class="all-repos-cta fade-in">
+                    <a href="https://github.com/vignesh2027?tab=repositories" target="_blank" class="cta-btn">
+                        View all 51 repositories on GitHub ↗
+                    </a>
+                </div>
 
             </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- MORE PROJECTS (compact grid)            -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="more-projects" class="section">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Also Built</div>
+                    <h2 class="section-title">More Projects</h2>
+                </div>
+                <div class="compact-grid fade-in">
+                    <a href="https://github.com/vignesh2027/Game-of-DSA" target="_blank" class="compact-card">
+                        <span class="cc-icon">🎮</span>
+                        <div><strong>Game of DSA</strong><span>C++ · Raylib</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/attendence-ai-" target="_blank" class="compact-card">
+                        <span class="cc-icon">📋</span>
+                        <div><strong>AttendanceAI</strong><span>AI · Analytics</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/datamend.py" target="_blank" class="compact-card">
+                        <span class="cc-icon">🧹</span>
+                        <div><strong>datamend.py</strong><span>Python · Data Quality</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/system-design" target="_blank" class="compact-card">
+                        <span class="cc-icon">🗺</span>
+                        <div><strong>SystemGraph</strong><span>JS · Architecture</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/Jarvis-voice" target="_blank" class="compact-card">
+                        <span class="cc-icon">🎙</span>
+                        <div><strong>Jarvis Voice</strong><span>JS · Voice AI</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/backend-optimization" target="_blank" class="compact-card">
+                        <span class="cc-icon">🛡</span>
+                        <div><strong>CrypticBastion</strong><span>TS · Cyber Threat</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/F.W.D" target="_blank" class="compact-card">
+                        <span class="cc-icon">🚀</span>
+                        <div><strong>F·W·E</strong><span>JS · 3D Web</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/TradeOrbit" target="_blank" class="compact-card">
+                        <span class="cc-icon">💹</span>
+                        <div><strong>TradeOrbit</strong><span>JS · Global Trade</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/Manus-Gestures" target="_blank" class="compact-card">
+                        <span class="cc-icon">✋</span>
+                        <div><strong>Manus Gestures</strong><span>Python · CV</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/builder-resume-" target="_blank" class="compact-card">
+                        <span class="cc-icon">📄</span>
+                        <div><strong>Resume Builder</strong><span>HTML · Tool</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/Awake-Arise" target="_blank" class="compact-card">
+                        <span class="cc-icon">🎓</span>
+                        <div><strong>Awake &amp; Arise</strong><span>TS · EdTech AI</span></div>
+                    </a>
+                    <a href="https://github.com/vignesh2027/GITGALAXY-" target="_blank" class="compact-card">
+                        <span class="cc-icon">🌌</span>
+                        <div><strong>GitGalaxy</strong><span>Vue · Gamified Dev</span></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- RESEARCH                                -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="research" class="section section-alt">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Research</div>
+                    <h2 class="section-title">Papers &amp; Architectures</h2>
+                    <p class="section-sub">Novel architectures and production frameworks pushing the frontier</p>
+                </div>
+
+                <div class="research-grid">
+
+                    <article class="research-card fade-in">
+                        <div class="research-num">01</div>
+                        <div class="research-content">
+                            <h3>TemporalMesh Transformer</h3>
+                            <p class="research-tagline">Novel unified architecture — dynamic graph · adaptive compute · temporal decay</p>
+                            <p class="research-desc">
+                                The first architecture to simultaneously fuse <strong>dynamic graph topology</strong>,
+                                <strong>token-level adaptive compute</strong>, and <strong>temporal semantic decay</strong>
+                                into a single unified model. No prior work does all three together. Built to handle
+                                evolving knowledge graphs with time-sensitive context — applicable to finance, medical, and real-time NLP.
+                            </p>
+                            <div class="research-tags">
+                                <span>Graph Neural Networks</span>
+                                <span>Transformers</span>
+                                <span>Temporal Modeling</span>
+                                <span>Adaptive Compute</span>
+                                <span>Novel Architecture</span>
+                            </div>
+                            <a href="https://github.com/vignesh2027/TemporalMesh-Transformer" target="_blank" class="research-link">View Repository ↗</a>
+                        </div>
+                    </article>
+
+                    <article class="research-card fade-in">
+                        <div class="research-num">02</div>
+                        <div class="research-content">
+                            <h3>VORTEX RAG Framework</h3>
+                            <p class="research-tagline">7-layer retrieval architecture solving semantic drift &amp; context poisoning</p>
+                            <p class="research-desc">
+                                <strong>Vector Orthogonal Resonance-Tuned EXtraction</strong> — a novel 7-layer RAG pipeline
+                                that simultaneously eliminates semantic drift and context poisoning in retrieval-augmented generation.
+                                Production-ready architecture designed for high-accuracy enterprise LLM deployments.
+                            </p>
+                            <div class="research-tags">
+                                <span>RAG</span>
+                                <span>Semantic Search</span>
+                                <span>Context Poisoning</span>
+                                <span>Vector Orthogonality</span>
+                                <span>Production LLM</span>
+                            </div>
+                            <a href="https://github.com/vignesh2027/VORTEXRAG" target="_blank" class="research-link">View Repository ↗</a>
+                        </div>
+                    </article>
+
+                    <article class="research-card fade-in">
+                        <div class="research-num">03</div>
+                        <div class="research-content">
+                            <h3>LLM Evaluation Framework</h3>
+                            <p class="research-tagline">Cross-model benchmarking: accuracy · latency · cost · hallucination</p>
+                            <p class="research-desc">
+                                A production-grade framework for systematically evaluating and comparing frontier LLMs —
+                                GPT-4, Claude, Gemini, and Mistral across multiple axes: accuracy, response latency,
+                                token cost, hallucination frequency, and multi-step reasoning quality. Reproducible benchmarks.
+                            </p>
+                            <div class="research-tags">
+                                <span>LLM Benchmarking</span>
+                                <span>GPT-4</span>
+                                <span>Claude</span>
+                                <span>Hallucination Detection</span>
+                                <span>Cost Analysis</span>
+                            </div>
+                            <a href="https://github.com/vignesh2027/LLM-Evaluation-Framework" target="_blank" class="research-link">View Repository ↗</a>
+                        </div>
+                    </article>
+
+                    <article class="research-card fade-in">
+                        <div class="research-num">04</div>
+                        <div class="research-content">
+                            <h3>365-Day Computer Vision Series</h3>
+                            <p class="research-tagline">Daily LinkedIn series — systematic CV learning journey</p>
+                            <p class="research-desc">
+                                A rigorous 365-day public learning series covering computer vision from fundamentals to
+                                state-of-the-art. Topics spanning classical CV, CNNs, transformers, detection,
+                                segmentation, and 3D vision — all documented and shared as open learning resources.
+                            </p>
+                            <div class="research-tags">
+                                <span>Computer Vision</span>
+                                <span>Deep Learning</span>
+                                <span>CNNs</span>
+                                <span>ViT</span>
+                                <span>LinkedIn</span>
+                            </div>
+                            <a href="https://github.com/vignesh2027/365-Days-Computer-Vision-Learning-Linkedin-Post" target="_blank" class="research-link">View on GitHub ↗</a>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- SKILLS                                  -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="skills" class="section">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Stack</div>
+                    <h2 class="section-title">Skills &amp; Technologies</h2>
+                </div>
+
+                <div class="skills-grid-outer fade-in">
+
+                    <div class="skill-group">
+                        <h4 class="sg-title">🤖 AI / ML</h4>
+                        <div class="sg-pills">
+                            <span class="sp sp-main">Large Language Models</span>
+                            <span class="sp sp-main">RAG Pipelines</span>
+                            <span class="sp">Multi-Agent Systems</span>
+                            <span class="sp">Computer Vision</span>
+                            <span class="sp">YOLOv8</span>
+                            <span class="sp">MLOps</span>
+                            <span class="sp">Graph Neural Networks</span>
+                            <span class="sp">Transformers</span>
+                            <span class="sp">FastAPI</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group">
+                        <h4 class="sg-title">🦀 Languages</h4>
+                        <div class="sg-pills">
+                            <span class="sp sp-main">Python</span>
+                            <span class="sp sp-main">Rust</span>
+                            <span class="sp sp-main">C++</span>
+                            <span class="sp">TypeScript</span>
+                            <span class="sp">JavaScript</span>
+                            <span class="sp">Dart / Flutter</span>
+                            <span class="sp">SQL</span>
+                            <span class="sp">GLSL</span>
+                            <span class="sp">Makefile</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group">
+                        <h4 class="sg-title">⚙️ Systems</h4>
+                        <div class="sg-pills">
+                            <span class="sp sp-main">Distributed Systems</span>
+                            <span class="sp sp-main">Raft Consensus</span>
+                            <span class="sp">LSM Trees</span>
+                            <span class="sp">gRPC</span>
+                            <span class="sp">MVCC</span>
+                            <span class="sp">Time-series DBs</span>
+                            <span class="sp">Consistent Hashing</span>
+                            <span class="sp">Storage Engines</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group">
+                        <h4 class="sg-title">🌐 Web &amp; 3D</h4>
+                        <div class="sg-pills">
+                            <span class="sp sp-main">Three.js</span>
+                            <span class="sp sp-main">WebGL</span>
+                            <span class="sp">CesiumJS</span>
+                            <span class="sp">React</span>
+                            <span class="sp">Vue</span>
+                            <span class="sp">GSAP</span>
+                            <span class="sp">HTML / CSS</span>
+                            <span class="sp">Webpack</span>
+                            <span class="sp">Vite</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group">
+                        <h4 class="sg-title">☁️ Cloud &amp; DevOps</h4>
+                        <div class="sg-pills">
+                            <span class="sp sp-main">AWS</span>
+                            <span class="sp">Firebase</span>
+                            <span class="sp">Docker</span>
+                            <span class="sp">GitHub Actions</span>
+                            <span class="sp">CI/CD</span>
+                            <span class="sp">Vercel</span>
+                            <span class="sp">GitHub Pages</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-group">
+                        <h4 class="sg-title">📱 Mobile &amp; Apps</h4>
+                        <div class="sg-pills">
+                            <span class="sp sp-main">Flutter</span>
+                            <span class="sp">Firebase</span>
+                            <span class="sp">Riverpod</span>
+                            <span class="sp">Eye Tracking</span>
+                            <span class="sp">Accessibility</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- EXPERIENCE / TIMELINE                   -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="experience" class="section section-alt">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Journey</div>
+                    <h2 class="section-title">Learning &amp; Building Timeline</h2>
+                </div>
+                <div class="timeline">
+
+                    <div class="tl-item fade-in">
+                        <div class="tl-dot"></div>
+                        <div class="tl-content">
+                            <span class="tl-date">2026 — Present</span>
+                            <h4>Advanced Systems &amp; AI Architecture</h4>
+                            <p>Building novel ML architectures (TemporalMesh Transformer), production LLM evaluation frameworks, and advanced RAG systems. Exploring the frontier of multi-agent AI orchestration.</p>
+                        </div>
+                    </div>
+
+                    <div class="tl-item fade-in">
+                        <div class="tl-dot"></div>
+                        <div class="tl-content">
+                            <span class="tl-date">2025 — 2026</span>
+                            <h4>Systems Programming in Rust</h4>
+                            <p>Deep dive into distributed systems: built rustkvd (Raft + LSM + gRPC) and FluxDB (2M writes/sec time-series engine). Mastered Raft consensus, storage engines, and production Rust.</p>
+                        </div>
+                    </div>
+
+                    <div class="tl-item fade-in">
+                        <div class="tl-dot"></div>
+                        <div class="tl-content">
+                            <span class="tl-date">2024 — 2025</span>
+                            <h4>3D Web &amp; Immersive Experiences</h4>
+                            <p>Mastered Three.js, WebGL, GLSL. Built TERRANOVA (Earth intelligence), NEXUS (3D news universe), FLY-VIEW (CesiumJS globe), F·W·E (cinematic experiences).</p>
+                        </div>
+                    </div>
+
+                    <div class="tl-item fade-in">
+                        <div class="tl-dot"></div>
+                        <div class="tl-content">
+                            <span class="tl-date">2024</span>
+                            <h4>Computer Vision &amp; Healthcare AI</h4>
+                            <p>365-day CV learning series on LinkedIn. Built real-time YOLOv8 pipelines, gesture control systems, and SparshCare — an ICU communication app with eye tracking.</p>
+                        </div>
+                    </div>
+
+                    <div class="tl-item fade-in">
+                        <div class="tl-dot"></div>
+                        <div class="tl-content">
+                            <span class="tl-date">2023 — 2024</span>
+                            <h4>Full-Stack &amp; Cloud Engineering</h4>
+                            <p>FastAPI, React, Flutter, Firebase, AWS. Built scalable production apps, learned MLOps, and started the open-source journey with 51+ repositories.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- HOBBIES                                 -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="hobbies" class="section">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Off the Clock</div>
+                    <h2 class="section-title">Hobbies &amp; Interests</h2>
+                </div>
+                <div class="hobbies-grid fade-in">
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">🌐</div>
+                        <h4>Immersive 3D Web</h4>
+                        <p>Building cinematic browser experiences with Three.js, CesiumJS, and WebGL. Every project pushes what a webpage can feel like.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">🧠</div>
+                        <h4>AI Research</h4>
+                        <p>Designing novel architectures and frameworks. Exploring what happens at the edge of LLMs, agents, and graph intelligence.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">🎮</div>
+                        <h4>Game Development</h4>
+                        <p>Building interactive games — from BMW racers in JS to DSA puzzles in C++/Raylib. Games are the most honest test of your code.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">📖</div>
+                        <h4>Learning in Public</h4>
+                        <p>365-day CV series on LinkedIn, open-source everything, best-practice guides. Teaching forces you to understand deeper.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">☕</div>
+                        <h4>Tea &amp; Late Nights</h4>
+                        <p>Best code written between 11pm and 3am, with a strong cup of kadai chai. This entire portfolio is proof.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">🌍</div>
+                        <h4>Earth &amp; Space Data</h4>
+                        <p>Fascinated by real-time planetary data — TERRANOVA, FLY-VIEW, NEXUS all come from the same obsession: making the invisible visible.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">⚡</div>
+                        <h4>Competitive DSA</h4>
+                        <p>Solving algorithmic problems for the joy of it. Game of DSA was built because regular practice felt too boring.</p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <div class="hc-icon">🔧</div>
+                        <h4>Building Tools</h4>
+                        <p>Every friction point becomes a tool: datamend for data quality, SystemGraph for architecture, GitHub Analyzer for repos.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- CONTACT                                 -->
+        <!-- ═══════════════════════════════════════ -->
+        <section id="contact" class="section section-alt">
+            <div class="container">
+                <div class="section-header fade-in">
+                    <div class="section-label">Let's Talk</div>
+                    <h2 class="section-title">Get In Touch</h2>
+                    <p class="section-sub">Open to internships, collaborations, and interesting problems</p>
+                </div>
+
+                <div class="contact-layout fade-in">
+
+                    <!-- Left: social cards -->
+                    <div class="contact-cards">
+                        <a href="https://github.com/vignesh2027" target="_blank" class="contact-card">
+                            <div class="cc-icon-wrap cc-gh">
+                                <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                            </div>
+                            <div class="cc-text">
+                                <strong>GitHub</strong>
+                                <span>github.com/vignesh2027</span>
+                                <em>73 followers · 51 repos</em>
+                            </div>
+                            <span class="cc-arrow">↗</span>
+                        </a>
+
+                        <a href="https://www.linkedin.com/in/vigneshwar-s" target="_blank" class="contact-card">
+                            <div class="cc-icon-wrap cc-li">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                            </div>
+                            <div class="cc-text">
+                                <strong>LinkedIn</strong>
+                                <span>linkedin.com/in/vigneshwar-s</span>
+                                <em>ML &amp; Cloud Enthusiast</em>
+                            </div>
+                            <span class="cc-arrow">↗</span>
+                        </a>
+
+                        <a href="mailto:applemacbook6sep2004@gmail.com" class="contact-card">
+                            <div class="cc-icon-wrap cc-em">✉</div>
+                            <div class="cc-text">
+                                <strong>Email</strong>
+                                <span>applemacbook6sep2004@gmail.com</span>
+                                <em>Best for opportunities &amp; collabs</em>
+                            </div>
+                            <span class="cc-arrow">↗</span>
+                        </a>
+
+                        <a href="https://huggingface.co/vigneshwar234" target="_blank" class="contact-card">
+                            <div class="cc-icon-wrap cc-hf">🤗</div>
+                            <div class="cc-text">
+                                <strong>Hugging Face</strong>
+                                <span>huggingface.co/vigneshwar234</span>
+                                <em>Models &amp; Datasets</em>
+                            </div>
+                            <span class="cc-arrow">↗</span>
+                        </a>
+                    </div>
+
+                    <!-- Right: availability + message -->
+                    <div class="contact-right">
+                        <div class="availability-card">
+                            <div class="avail-dot"></div>
+                            <div>
+                                <strong>Open to Opportunities</strong>
+                                <p>Internships · Research Collaborations · Open Source</p>
+                            </div>
+                        </div>
+                        <div class="contact-msg">
+                            <p>
+                                I'm always excited to meet people working on hard problems.
+                                Whether it's a research collaboration, internship, freelance project,
+                                or just a chat about distributed systems and AI — reach out.
+                            </p>
+                            <p>
+                                Based in <strong>Chennai, India</strong>. Available for remote work worldwide.
+                            </p>
+                            <a href="mailto:applemacbook6sep2004@gmail.com" class="big-email-btn">
+                                Send me a message ↗
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Footer ─────────────────────────────── -->
+        <footer id="footer">
+            <div class="container">
+                <div class="footer-inner">
+                    <div class="footer-left">
+                        <span class="footer-logo">☕ Vignesh's Tea Kadai</span>
+                        <span class="footer-sub">Brewed with Three.js, love, and lots of chai</span>
+                    </div>
+                    <div class="footer-links">
+                        <a href="https://github.com/vignesh2027/portfolio-vignesh" target="_blank">Source Code ↗</a>
+                        <a href="#hero">Back to top ↑</a>
+                    </div>
+                </div>
+                <p class="footer-cr">© 2026 Vigneshwar / Vignesh — Chennai, India</p>
+            </div>
+        </footer>
+
+    </div><!-- /page -->
+
+    <!-- ── Floating nav (appears on scroll) ──────── -->
+    <div id="float-nav" class="float-nav hidden">
+        <button data-panel="overlay-projects" class="fn-btn">Projects</button>
+        <button data-panel="overlay-about"    class="fn-btn">About</button>
+        <button data-panel="overlay-contact"  class="fn-btn">Contact</button>
+        <button id="theme-toggle-2" class="fn-btn theme-fn">🌙</button>
+    </div>
+
+    <!-- ── Overlays (for 3D interactions) ─────────── -->
+    <div id="overlay-projects" class="overlay-panel hidden">
+        <div class="panel-header">
+            <h2 class="panel-title">☕ All Projects</h2>
+            <button class="overlay-close" data-close="overlay-projects">✕</button>
+        </div>
+        <div class="panel-body">
+            <p style="color:var(--text-2);margin-bottom:1rem;font-size:.85rem;">Scroll down the page for the full projects section with details and filters.</p>
+            <div class="projects-grid" id="panel-projects-grid"></div>
         </div>
     </div>
 
-    <!-- ── About Me Overlay ──────────────────────────── -->
     <div id="overlay-about" class="overlay-panel hidden">
         <div class="panel-header">
-            <h2 class="panel-title">About</h2>
-            <button class="overlay-close" data-close="overlay-about" aria-label="Close">✕</button>
+            <h2 class="panel-title">About Vignesh</h2>
+            <button class="overlay-close" data-close="overlay-about">✕</button>
         </div>
         <div class="panel-body">
             <div class="about-card">
-                <div class="about-hero">
+                <div class="about-hero-inner">
                     <div class="about-avatar">V</div>
                     <div class="about-hero-text">
-                        <h2>Vignesh S</h2>
-                        <p class="tagline">Builder · Systems thinker · Tea-fuelled coder</p>
+                        <h2>Vigneshwar</h2>
+                        <p class="tagline">CS Student · ML &amp; Cloud · Chennai</p>
                     </div>
                 </div>
-                <div class="about-body">
-                    <p class="about-bio">
-                        I build things at the intersection of systems programming, AI, and interactive experiences.
-                        From distributed databases in Rust to ICU patient apps in Flutter — if it's technically hard
-                        and genuinely useful, I'm in. Currently exploring multi-agent AI systems and WebGL-powered
-                        knowledge interfaces.
-                    </p>
-                    <p class="skills-label">Skills &amp; Technologies</p>
-                    <div class="skills-grid">
-                        <span class="skill">Rust</span>
-                        <span class="skill">Python</span>
-                        <span class="skill">C++</span>
-                        <span class="skill">Flutter / Dart</span>
-                        <span class="skill">Three.js</span>
-                        <span class="skill">Firebase</span>
-                        <span class="skill">Distributed Systems</span>
-                        <span class="skill">RAG / LLMs</span>
-                        <span class="skill">WebGL / GLSL</span>
-                        <span class="skill">gRPC</span>
-                        <span class="skill">Raft Consensus</span>
-                        <span class="skill">LSM Trees</span>
-                    </div>
-                    <div class="social-links">
-                        <a href="https://github.com/vignesh2027" target="_blank" rel="noopener" class="social-btn github">
-                            ⌥ GitHub
-                        </a>
-                        <a href="mailto:applemacbook6sep2004@gmail.com" class="social-btn email">
-                            ✉ Email me
-                        </a>
+                <div class="about-body-inner">
+                    <p class="about-bio-text">Building distributed systems, AI frameworks, and immersive 3D experiences. 51 open-source projects. Rust, Python, Three.js, Flutter.</p>
+                    <div class="social-row">
+                        <a href="https://github.com/vignesh2027" target="_blank" class="social-btn-sm gh">GitHub</a>
+                        <a href="https://www.linkedin.com/in/vigneshwar-s" target="_blank" class="social-btn-sm li">LinkedIn</a>
+                        <a href="mailto:applemacbook6sep2004@gmail.com" class="social-btn-sm em">Email</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ── Contact Overlay ───────────────────────────── -->
     <div id="overlay-contact" class="overlay-panel hidden">
         <div class="panel-header">
             <h2 class="panel-title">Find Me</h2>
-            <button class="overlay-close" data-close="overlay-contact" aria-label="Close">✕</button>
+            <button class="overlay-close" data-close="overlay-contact">✕</button>
         </div>
         <div class="panel-body">
-            <div class="contact-grid">
-                <a href="https://github.com/vignesh2027" target="_blank" rel="noopener" class="contact-card">
-                    <div class="contact-icon-wrap">⌥</div>
-                    <div>
-                        <strong>GitHub</strong>
-                        <p>github.com/vignesh2027</p>
-                    </div>
-                    <span class="contact-arrow">↗</span>
+            <div class="contact-grid-sm">
+                <a href="https://github.com/vignesh2027" target="_blank" class="contact-card">
+                    <div class="cc-icon-wrap cc-gh">⌥</div>
+                    <div class="cc-text"><strong>GitHub</strong><span>github.com/vignesh2027</span></div>
+                    <span class="cc-arrow">↗</span>
+                </a>
+                <a href="https://www.linkedin.com/in/vigneshwar-s" target="_blank" class="contact-card">
+                    <div class="cc-icon-wrap cc-li">in</div>
+                    <div class="cc-text"><strong>LinkedIn</strong><span>vigneshwar-s</span></div>
+                    <span class="cc-arrow">↗</span>
                 </a>
                 <a href="mailto:applemacbook6sep2004@gmail.com" class="contact-card">
-                    <div class="contact-icon-wrap">✉</div>
-                    <div>
-                        <strong>Email</strong>
-                        <p>applemacbook6sep2004@gmail.com</p>
-                    </div>
-                    <span class="contact-arrow">↗</span>
+                    <div class="cc-icon-wrap cc-em">✉</div>
+                    <div class="cc-text"><strong>Email</strong><span>applemacbook6sep2004@gmail.com</span></div>
+                    <span class="cc-arrow">↗</span>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- ── Nav ───────────────────────────────────────── -->
-    <nav id="nav" class="nav hidden">
-        <button id="nav-projects" class="nav-btn">Projects</button>
-        <button id="nav-about"    class="nav-btn">About</button>
-        <button id="nav-contact"  class="nav-btn">Contact</button>
-    </nav>
-
-    <!-- ── Keyboard shortcuts ───────────────────────── -->
+    <!-- Keyboard shortcut hints -->
     <div id="shortcuts" class="shortcuts hidden">
         <div class="key-hint"><kbd>P</kbd> Projects</div>
         <div class="key-hint"><kbd>A</kbd> About</div>
         <div class="key-hint"><kbd>C</kbd> Contact</div>
+        <div class="key-hint"><kbd>T</kbd> Theme</div>
         <div class="key-hint"><kbd>ESC</kbd> Close</div>
     </div>
 
