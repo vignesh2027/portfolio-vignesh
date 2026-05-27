@@ -477,7 +477,7 @@ export default class TeaKadai {
             ctx.strokeRect(13, 13, w - 26, h - 26)
 
             // Corner stars
-            [[24, 24], [w - 24, 24], [24, h - 24], [w - 24, h - 24]].forEach(([cx, cy]) => {
+            ;[[24, 24], [w - 24, 24], [24, h - 24], [w - 24, h - 24]].forEach(([cx, cy]) => {
                 ctx.font = '18px serif'
                 ctx.fillStyle = '#E8A020'
                 ctx.textAlign = 'center'
