@@ -31,13 +31,14 @@ export default class Camera {
     setControls() {
         this.controls = new OrbitControls(this.instance, this.canvas)
         this.controls.enableDamping  = true
-        this.controls.dampingFactor  = 0.05
+        this.controls.dampingFactor  = 0.04
         this.controls.target.set(0, 1.5, -1.5)
         this.controls.enablePan      = false
-        this.controls.minDistance    = 1.5
-        this.controls.maxDistance    = 9.0
-        this.controls.maxPolarAngle  = Math.PI * 0.54
-        this.controls.minPolarAngle  = Math.PI * 0.06
+        this.controls.minDistance    = 1.2
+        this.controls.maxDistance    = 22.0
+        // Full 360: can look up at ceiling and down at floor
+        this.controls.maxPolarAngle  = Math.PI * 0.88
+        this.controls.minPolarAngle  = 0.02
     }
 
     setPositions() {
@@ -50,37 +51,57 @@ export default class Camera {
             // ── Back wall — chalkboard / menu ─────────────────
             menuBoard: {
                 position: new THREE.Vector3(0, 2.5, -1.0),
-                target:   new THREE.Vector3(0, 2.2, -6.3)
+                target:   new THREE.Vector3(0, 2.2, -3.0)
             },
             // ── Back wall — about frame ───────────────────────
             about: {
-                position: new THREE.Vector3(-4.5, 2.6, -1.2),
-                target:   new THREE.Vector3(-5.8, 2.2, -6.3)
+                position: new THREE.Vector3(-3.5, 2.5, -1.0),
+                target:   new THREE.Vector3(-5.5, 2.1, -3.0)
             },
             // ── Back wall — research frame ────────────────────
             research: {
-                position: new THREE.Vector3(4.5, 2.6, -1.2),
-                target:   new THREE.Vector3(5.8, 2.2, -6.3)
+                position: new THREE.Vector3(3.5, 2.5, -1.0),
+                target:   new THREE.Vector3(5.5, 2.1, -3.0)
             },
             // ── Back wall — contact sign ──────────────────────
             contact: {
-                position: new THREE.Vector3(5.5, 1.4, -1.0),
-                target:   new THREE.Vector3(6.0, 0.8, -6.3)
+                position: new THREE.Vector3(4.0, 1.5, -0.5),
+                target:   new THREE.Vector3(5.5, 0.8, -3.0)
             },
             // ── Left wall — skills panel ──────────────────────
             leftWall: {
-                position: new THREE.Vector3(-2.5, 2.4, -1.5),
-                target:   new THREE.Vector3(-7.8, 2.0, -2.5)
+                position: new THREE.Vector3(-2.5, 2.4, -1.0),
+                target:   new THREE.Vector3(-5.7, 2.0, -1.5)
             },
-            // ── Right wall — GitHub panel ─────────────────────
+            // ── Right wall — GitHub / TV panel ───────────────
             rightWall: {
-                position: new THREE.Vector3(2.5, 2.4, -1.5),
-                target:   new THREE.Vector3(7.8, 2.0, -2.5)
+                position: new THREE.Vector3(2.5, 2.4, -1.0),
+                target:   new THREE.Vector3(5.7, 2.0, -1.5)
             },
             // ── Projects overview ────────────────────────────
             projects: {
                 position: new THREE.Vector3(0, 2.5, -1.0),
-                target:   new THREE.Vector3(0, 2.2, -6.3)
+                target:   new THREE.Vector3(0, 2.2, -3.0)
+            },
+            // ── Outside — down the street ────────────────────
+            outdoor: {
+                position: new THREE.Vector3(0, 3.0, 8.0),
+                target:   new THREE.Vector3(0, 2.0, 20.0)
+            },
+            // ── Outside — git stats billboard ────────────────
+            gitStats: {
+                position: new THREE.Vector3(-6.0, 3.0, 12.0),
+                target:   new THREE.Vector3(-10.0, 2.8, 14.0)
+            },
+            // ── Outside — about me billboard ─────────────────
+            aboutOutdoor: {
+                position: new THREE.Vector3(6.0, 3.0, 12.0),
+                target:   new THREE.Vector3(10.0, 2.8, 14.0)
+            },
+            // ── Outside — opposite shop ───────────────────────
+            oppositeShop: {
+                position: new THREE.Vector3(0, 3.5, 22.0),
+                target:   new THREE.Vector3(0, 3.0, 28.0)
             },
             // ── Individual project cups at xs=[-3.2..-0.2..2.8]
             'project-dsa': {

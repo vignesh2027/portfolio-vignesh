@@ -13,21 +13,32 @@ export default class Environment {
     }
 
     setAmbientLight() {
-        // Very dim warm ambient — almost all light from lanterns
-        this.ambientLight = new THREE.AmbientLight(0xFFCCA0, 0.35)
+        // Warmer ambient — supports interior + exterior visibility
+        this.ambientLight = new THREE.AmbientLight(0xFFCCA0, 0.45)
         this.scene.add(this.ambientLight)
     }
 
     setMoonLight() {
-        // Soft cool moonlight from upper-left (through window)
-        this.moonLight = new THREE.DirectionalLight(0xB0C8FF, 0.28)
-        this.moonLight.position.set(-6, 7, 2)
+        // Soft cool moonlight — comes from behind camera (from street)
+        this.moonLight = new THREE.DirectionalLight(0xB0C8FF, 0.32)
+        this.moonLight.position.set(-4, 12, 15)
+        this.moonLight.castShadow = true
         this.scene.add(this.moonLight)
 
-        // Subtle fill from front so counter is readable
-        this.fillLight = new THREE.DirectionalLight(0xFF9040, 0.18)
-        this.fillLight.position.set(0, 3, 8)
+        // Warm fill for interior counter
+        this.fillLight = new THREE.DirectionalLight(0xFF9040, 0.22)
+        this.fillLight.position.set(0, 4, 6)
         this.scene.add(this.fillLight)
+
+        // Street ambient — cool blue-white from above the street
+        this.streetAmbient = new THREE.DirectionalLight(0xA0B8CC, 0.18)
+        this.streetAmbient.position.set(0, 15, 16)
+        this.scene.add(this.streetAmbient)
+
+        // Opposite building reflected light (blue-purple)
+        this.oppLight = new THREE.PointLight(0x4040FF, 0.6, 18, 1.4)
+        this.oppLight.position.set(0, 6, 26)
+        this.scene.add(this.oppLight)
     }
 
     setLanternLights() {
@@ -63,8 +74,8 @@ export default class Environment {
     }
 
     setFog() {
-        // Warm dark haze — not too thick
-        this.scene.fog = new THREE.FogExp2(0x050203, 0.022)
+        // Very light rain-haze so exterior buildings are visible
+        this.scene.fog = new THREE.FogExp2(0x050608, 0.014)
     }
 
     update(elapsedTime) {

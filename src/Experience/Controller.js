@@ -176,6 +176,11 @@ const CONTACT_HTML = `
                 <span class="cc-label">Portfolio</span>
                 <span class="cc-val">vignesh2027.github.io</span>
             </a>
+            <a class="contact-card" href="https://dev.to/vignesh2027" target="_blank">
+                <span class="cc-icon">✍</span>
+                <span class="cc-label">Dev.to</span>
+                <span class="cc-val">@vignesh2027</span>
+            </a>
         </div>
         <p style="color:rgba(255,245,224,0.5);font-style:italic;margin-top:28px;font-size:14px">
             Based in Chennai, India · Open to remote work globally

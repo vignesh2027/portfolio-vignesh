@@ -1,17 +1,32 @@
 import * as THREE from 'three'
 import Experience from '../Experience.js'
 
+// ── Exterior world constants ───────────────────────────
+const FACADE_Z  = 4.2    // front face of kadai building
+const STREET_Z  = 28.0   // where opposite building starts
+const STREET_W  = 14     // street half-width  x = ±STREET_W
+const OPP_Z     = 28.0   // front of opposite building
+const OPP_BACK  = 38.0   // back of opposite building
+const OPP_H     = 9.0    // height of opposite building
+
 export default class TeaKadai {
     constructor(materials) {
         this.experience = new Experience()
         this.scene      = this.experience.scene
         this.materials  = materials
 
-        this.clickTargets = []
-        this.lanterns     = []
-        this.teaCups      = []
-        this.fanBlades    = null
+        this.clickTargets   = []
+        this.lanterns       = []
+        this.teaCups        = []
+        this.fanBlades      = null
+        this.rain           = null
+        this.rainVelocities = null
+        this.tvCanvas       = null
+        this.tvCtx          = null
+        this.tvMaterial     = null
+        this.lastTVUpdate   = -1
 
+        // ── Interior ──────────────────────────────────
         this.buildFloorAndWalls()
         this.buildCeiling()
         this.buildCounter()
@@ -24,11 +39,25 @@ export default class TeaKadai {
         this.buildContactSign()
         this.buildSkillsWall()
         this.buildGitHubWall()
+        this.buildTV()
         this.buildLanterns()
         this.buildStringLights()
         this.buildWindow()
         this.buildPlants()
         this.buildDecorations()
+
+        // ── Exterior world ────────────────────────────
+        this.buildEntrance()
+        this.buildExteriorGround()
+        this.buildExteriorWalls()
+        this.buildStreetLamps()
+        this.buildGitStatsBillboard()
+        this.buildAboutMeBillboard()
+        this.buildOppositeShop()
+
+        // ── Atmosphere ────────────────────────────────
+        this.buildRain()
+        this.buildRainSound()
         this.buildStarField()
     }
 
@@ -656,7 +685,7 @@ export default class TeaKadai {
 
             ctx.font = 'italic 15px Georgia, serif'
             ctx.fillStyle = '#C47D0A'
-            ctx.fillText('CS Student · Chennai', w / 2, 228)
+            ctx.fillText('CS Student · Takshashila Univ', w / 2, 228)
 
             ctx.strokeStyle = 'rgba(196,125,10,0.3)'
             ctx.lineWidth = 1
@@ -683,7 +712,7 @@ export default class TeaKadai {
             ctx.beginPath(); ctx.moveTo(40, 460); ctx.lineTo(w - 40, 460); ctx.stroke()
 
             // Quick info
-            const icons = [['🎓', 'VIT Chennai'], ['🐙', 'vignesh2027'], ['📧', 'gmail.com']]
+            const icons = [['🎓', 'Takshashila Univ'], ['🐙', 'vignesh2027'], ['📧', 'gmail.com']]
             icons.forEach(([ic, txt], i) => {
                 ctx.font = '400 14px sans-serif'
                 ctx.fillStyle = '#2A1A08'
@@ -1365,6 +1394,909 @@ export default class TeaKadai {
         this.scene.add(this.stars)
     }
 
+    // ── TV (animated terminal screen) ─────────────────
+    buildTV() {
+        // TV body — right interior wall
+        const tvBody = new THREE.Mesh(
+            new THREE.BoxGeometry(0.06, 1.3, 2.1),
+            new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.5, metalness: 0.7 })
+        )
+        tvBody.position.set(5.72, 2.8, 0.8)
+        this.scene.add(tvBody)
+
+        // Bezels
+        ;[[-0.62, 0], [0.62, 0], [0, -0.62], [0, 0.62]].forEach(([dz, dy]) => {
+            const b = new THREE.Mesh(
+                new THREE.BoxGeometry(0.07, dy ? 0.06 : 1.3, dz ? 0.12 : 2.1),
+                new THREE.MeshStandardMaterial({ color: 0x0A0A0A, roughness: 0.6, metalness: 0.6 })
+            )
+            b.position.set(5.72, 2.8 + dy, 0.8 + dz)
+            this.scene.add(b)
+        })
+
+        // Screen canvas
+        const W = 512, H = 320
+        this.tvCanvas = document.createElement('canvas')
+        this.tvCanvas.width  = W
+        this.tvCanvas.height = H
+        this.tvCtx = this.tvCanvas.getContext('2d')
+
+        const screenTex = new THREE.CanvasTexture(this.tvCanvas)
+        screenTex.colorSpace = THREE.SRGBColorSpace
+        this.tvMaterial = new THREE.MeshStandardMaterial({
+            map: screenTex, emissive: 0x001408, emissiveIntensity: 0.4, roughness: 0.05
+        })
+        const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.96, 1.22), this.tvMaterial)
+        screen.rotation.y = -Math.PI / 2
+        screen.position.set(5.69, 2.8, 0.8)
+        this.scene.add(screen)
+
+        // TV glow light
+        const tvLight = new THREE.PointLight(0x00FF88, 0.3, 2.5, 2)
+        tvLight.position.set(5.2, 2.8, 0.8)
+        this.scene.add(tvLight)
+        this.tvLight = tvLight
+
+        // Initial frame draw
+        this.drawTVFrame(0)
+    }
+
+    drawTVFrame(elapsedTime) {
+        if (!this.tvCtx) return
+        const ctx = this.tvCtx
+        const W = 512, H = 320
+
+        ctx.fillStyle = '#050D08'
+        ctx.fillRect(0, 0, W, H)
+
+        // Scanlines
+        for (let y = 0; y < H; y += 4) {
+            ctx.fillStyle = 'rgba(0,0,0,0.15)'
+            ctx.fillRect(0, y, W, 2)
+        }
+
+        // Header bar
+        ctx.fillStyle = '#002208'
+        ctx.fillRect(0, 0, W, 34)
+
+        ctx.font = '700 13px monospace'
+        ctx.fillStyle = '#00FF88'
+        ctx.textAlign = 'left'
+        ctx.fillText('vignesh@dev:~$', 12, 22)
+
+        // Live time (top right)
+        ctx.font = '600 12px monospace'
+        ctx.fillStyle = '#80FFAA'
+        ctx.textAlign = 'right'
+        const now = new Date()
+        ctx.fillText(now.toLocaleTimeString(), W - 10, 22)
+
+        ctx.textAlign = 'left'
+
+        // Git log lines (scroll based on time)
+        const logLines = [
+            { hash: 'f0fd3e1', msg: 'feat: camera inside kadai', time: '2m ago' },
+            { hash: 'fb4eb91', msg: 'fix: ASI trap — startup crash', time: '1d ago' },
+            { hash: 'b976581', msg: 'feat: 3D tea kadai portfolio',   time: '2d ago' },
+            { hash: '63dea2b', msg: 'feat: cup info cards + uni fix', time: '3d ago' },
+            { hash: 'a1b2c3d', msg: 'feat: FluxDB 100+ tests pass',   time: '5d ago' },
+            { hash: 'e4f5g6h', msg: 'feat: VORTEXRAG 7-layer RAG',    time: '8d ago' },
+            { hash: 'i7j8k9l', msg: 'feat: rustkvd Raft consensus',   time: '12d ago'},
+            { hash: 'm1n2o3p', msg: 'fix: SparshCare eye tracking',   time: '18d ago'},
+        ]
+        const offset = Math.floor(elapsedTime * 0.2) % logLines.length
+
+        ctx.font = '700 11px monospace'
+        ctx.fillStyle = 'rgba(0,255,136,0.7)'
+        ctx.fillText('$ git log --oneline HEAD~8..HEAD', 12, 54)
+
+        logLines.forEach((l, i) => {
+            const li = (i + offset) % logLines.length
+            const y = 76 + i * 26
+            ctx.fillStyle = 'rgba(255,200,80,0.8)'
+            ctx.font = '600 10px monospace'
+            ctx.fillText(logLines[li].hash, 12, y)
+            ctx.fillStyle = 'rgba(255,255,255,0.75)'
+            ctx.font = '400 11px monospace'
+            ctx.fillText(logLines[li].msg, 80, y)
+            ctx.fillStyle = 'rgba(120,180,120,0.5)'
+            ctx.font = '400 9px monospace'
+            ctx.fillText(logLines[li].time, W - 60, y)
+        })
+
+        // Status bar
+        ctx.fillStyle = '#001A08'
+        ctx.fillRect(0, H - 30, W, 30)
+        ctx.font = '400 10px monospace'
+        ctx.fillStyle = 'rgba(0,255,136,0.6)'
+        ctx.textAlign = 'left'
+        ctx.fillText('● 7 projects  ● 200+ commits  ● Open Source', 12, H - 10)
+
+        if (this.tvMaterial && this.tvMaterial.map) {
+            this.tvMaterial.map.needsUpdate = true
+        }
+    }
+
+    // ── Entrance facade ────────────────────────────────
+    buildEntrance() {
+        const m = this.materials
+
+        // Overhead canopy frame
+        const canopyBeam = new THREE.Mesh(
+            new THREE.BoxGeometry(14, 0.18, 3.5),
+            new THREE.MeshStandardMaterial({ color: 0x6B1A08, roughness: 0.8 })
+        )
+        canopyBeam.position.set(0, 4.78, FACADE_Z + 1.4)
+        this.scene.add(canopyBeam)
+
+        // Canopy cloth — 3 angled panels
+        ;[[-4.0, -0.12], [0, 0], [4.0, -0.12]].forEach(([xoff, yoff]) => {
+            const panel = new THREE.Mesh(
+                new THREE.BoxGeometry(4.4, 0.06, 3.2),
+                new THREE.MeshStandardMaterial({
+                    color: 0xA0200A, roughness: 1.0, metalness: 0.0, side: THREE.DoubleSide
+                })
+            )
+            panel.position.set(xoff, 4.5 + yoff, FACADE_Z + 1.4)
+            panel.rotation.x = -0.12
+            this.scene.add(panel)
+
+            // Stripe on canopy
+            const stripe = new THREE.Mesh(
+                new THREE.BoxGeometry(4.4, 0.065, 0.25),
+                new THREE.MeshStandardMaterial({ color: 0xFFF5E0, roughness: 1.0, side: THREE.DoubleSide })
+            )
+            stripe.position.set(xoff, 4.5 + yoff - 0.01, FACADE_Z + 0.85)
+            stripe.rotation.x = -0.12
+            this.scene.add(stripe)
+        })
+
+        // Entry columns (left and right of entrance)
+        ;[-5.5, 5.5].forEach(x => {
+            const col = new THREE.Mesh(new THREE.BoxGeometry(0.38, 5.6, 0.38), m.pillar)
+            col.position.set(x, 1.98, FACADE_Z - 0.19)
+            col.castShadow = true
+            this.scene.add(col)
+            // Column cap
+            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.16, 0.58), m.darkWood)
+            cap.position.set(x, 4.86, FACADE_Z - 0.19)
+            this.scene.add(cap)
+        })
+
+        // Building sign board
+        const signBacking = new THREE.Mesh(new THREE.BoxGeometry(10.0, 1.2, 0.14), m.darkWood)
+        signBacking.position.set(0, 5.5, FACADE_Z - 0.22)
+        this.scene.add(signBacking)
+
+        const signTex = this.makeCanvasTexture(1600, 192, (ctx, w, h) => {
+            const g = ctx.createLinearGradient(0, 0, w, 0)
+            g.addColorStop(0,   '#1E0E02')
+            g.addColorStop(0.5, '#3D2210')
+            g.addColorStop(1,   '#1E0E02')
+            ctx.fillStyle = g
+            ctx.fillRect(0, 0, w, h)
+            ctx.strokeStyle = '#E8A020'
+            ctx.lineWidth = 6
+            ctx.strokeRect(6, 6, w - 12, h - 12)
+            ctx.lineWidth = 1.5
+            ctx.strokeRect(18, 18, w - 36, h - 36)
+            ctx.font = '700 72px Georgia, serif'
+            ctx.fillStyle = '#FFF5E0'
+            ctx.textAlign = 'center'
+            ctx.shadowColor = 'rgba(232,160,32,0.8)'
+            ctx.shadowBlur = 18
+            ctx.fillText('☕  Vignesh\'s Tea Kadai  ☕', w / 2, 122)
+            ctx.shadowBlur = 0
+            ctx.font = 'italic 28px Georgia, serif'
+            ctx.fillStyle = 'rgba(232,160,32,0.75)'
+            ctx.fillText('Takshashila University · CS 2022–26 · Chennai', w / 2, 164)
+        })
+        const sign = new THREE.Mesh(
+            new THREE.PlaneGeometry(9.7, 1.1),
+            new THREE.MeshStandardMaterial({ map: signTex, emissive: 0x3D1A00, emissiveIntensity: 0.12, roughness: 0.6 })
+        )
+        sign.position.set(0, 5.5, FACADE_Z - 0.16)
+        this.scene.add(sign)
+
+        // Neon "OPEN" sign on right column
+        const neonTex = this.makeCanvasTexture(200, 64, (ctx, w, h) => {
+            ctx.fillStyle = '#080808'
+            ctx.fillRect(0, 0, w, h)
+            ctx.font = '700 40px monospace'
+            ctx.textAlign = 'center'
+            ctx.shadowColor = '#00FF88'
+            ctx.shadowBlur = 16
+            ctx.fillStyle = '#00FF88'
+            ctx.fillText('OPEN', w / 2, 46)
+        })
+        const neon = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.9, 0.29),
+            new THREE.MeshStandardMaterial({ map: neonTex, emissive: 0x004420, emissiveIntensity: 1.2, roughness: 0.05 })
+        )
+        neon.position.set(4.8, 2.8, FACADE_Z - 0.15)
+        this.scene.add(neon)
+
+        // Neon glow light near sign
+        const neonGlow = new THREE.PointLight(0x00FF88, 0.8, 2.5, 2)
+        neonGlow.position.set(4.8, 2.8, FACADE_Z + 0.2)
+        this.scene.add(neonGlow)
+
+        // Front step
+        const step = new THREE.Mesh(new THREE.BoxGeometry(12, 0.14, 0.6), m.marble)
+        step.position.set(0, -0.82, FACADE_Z - 0.3)
+        this.scene.add(step)
+    }
+
+    // ── Exterior ground — wet street ───────────────────
+    buildExteriorGround() {
+        // Main street surface (reflective)
+        const streetTex = this.makeCanvasTexture(512, 512, (ctx, w, h) => {
+            // Dark wet asphalt
+            ctx.fillStyle = '#1A1814'
+            ctx.fillRect(0, 0, w, h)
+            // Grain
+            for (let i = 0; i < 8000; i++) {
+                const x = Math.random() * w, y = Math.random() * h
+                ctx.fillStyle = `rgba(${60 + Math.random() * 30},${55 + Math.random() * 25},${45 + Math.random() * 20},0.4)`
+                ctx.fillRect(x, y, 1, 1)
+            }
+            // Lane markings
+            ctx.strokeStyle = 'rgba(255,255,160,0.55)'
+            ctx.lineWidth = 3
+            ctx.setLineDash([28, 18])
+            ctx.beginPath(); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.stroke()
+            ctx.setLineDash([])
+            // Puddle reflections
+            for (let p = 0; p < 6; p++) {
+                const px = Math.random() * w, py = Math.random() * h
+                const pr = 20 + Math.random() * 40
+                const rg = ctx.createRadialGradient(px, py, 0, px, py, pr)
+                rg.addColorStop(0, 'rgba(100,140,200,0.18)')
+                rg.addColorStop(1, 'rgba(100,140,200,0)')
+                ctx.fillStyle = rg
+                ctx.beginPath(); ctx.ellipse(px, py, pr, pr * 0.5, 0, 0, Math.PI * 2); ctx.fill()
+            }
+        })
+        const streetMat = new THREE.MeshStandardMaterial({
+            map: streetTex, roughness: 0.35, metalness: 0.1
+        })
+        const street = new THREE.Mesh(new THREE.PlaneGeometry(STREET_W * 2, STREET_Z - FACADE_Z + 6), streetMat)
+        street.rotation.x = -Math.PI / 2
+        street.position.set(0, -0.82, (FACADE_Z + STREET_Z) / 2)
+        street.receiveShadow = true
+        this.scene.add(street)
+
+        // Sidewalks
+        const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x888070, roughness: 0.88 })
+        ;[-1, 1].forEach(side => {
+            const sw = new THREE.Mesh(new THREE.PlaneGeometry(3.0, STREET_Z - FACADE_Z + 6), sidewalkMat)
+            sw.rotation.x = -Math.PI / 2
+            sw.position.set(side * (STREET_W - 1.5), -0.80, (FACADE_Z + STREET_Z) / 2)
+            this.scene.add(sw)
+
+            // Curb
+            const curb = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, STREET_Z - FACADE_Z + 6), sidewalkMat)
+            curb.position.set(side * (STREET_W - 3.1), -0.76, (FACADE_Z + STREET_Z) / 2)
+            this.scene.add(curb)
+        })
+    }
+
+    // ── Exterior walls of kadai building ──────────────
+    buildExteriorWalls() {
+        const m = this.materials
+        const wallLength = FACADE_Z - (-3.0)  // front to back
+
+        // Left exterior wall panel
+        const extWallL = new THREE.Mesh(
+            new THREE.BoxGeometry(0.22, 5.6, wallLength + 0.5),
+            new THREE.MeshStandardMaterial({ color: 0xD4C4A8, roughness: 0.9 })
+        )
+        extWallL.position.set(-5.89, 1.98, (FACADE_Z - 3.0) / 2)
+        this.scene.add(extWallL)
+
+        // Right exterior wall panel
+        const extWallR = extWallL.clone()
+        extWallR.position.set(5.89, 1.98, (FACADE_Z - 3.0) / 2)
+        this.scene.add(extWallR)
+
+        // Roof parapet
+        const parapet = new THREE.Mesh(new THREE.BoxGeometry(12.5, 0.45, 0.28), m.darkWood)
+        parapet.position.set(0, 5.15, FACADE_Z - 0.14)
+        this.scene.add(parapet)
+
+        // Back wall exterior
+        const backExt = new THREE.Mesh(
+            new THREE.BoxGeometry(12.5, 5.6, 0.22),
+            new THREE.MeshStandardMaterial({ color: 0xC8B898, roughness: 0.92 })
+        )
+        backExt.position.set(0, 1.98, -3.11)
+        this.scene.add(backExt)
+
+        // Ventilation pipe on right wall
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.0, 8), m.metal)
+        pipe.rotation.z = Math.PI / 2
+        pipe.position.set(4.2, 2.8, FACADE_Z - 0.3)
+        this.scene.add(pipe)
+
+        // AC unit on right wall exterior
+        const ac = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.52, 0.88), m.metal)
+        ac.position.set(5.9, 1.9, -0.5)
+        this.scene.add(ac)
+    }
+
+    // ── Street lamps ───────────────────────────────────
+    buildStreetLamps() {
+        const lampPositions = [
+            { x: -8, z: 8 }, { x:  8, z: 8 },
+            { x: -8, z: 18 }, { x: 8, z: 18 },
+        ]
+        const poleMat  = new THREE.MeshStandardMaterial({ color: 0x303030, roughness: 0.5, metalness: 0.7 })
+        const headMat  = new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.4, metalness: 0.8 })
+        const bulbMat  = new THREE.MeshStandardMaterial({ color: 0xFFFAE0, emissive: 0xFFEC80, emissiveIntensity: 2.0, roughness: 0.0 })
+
+        lampPositions.forEach(({ x, z }) => {
+            // Pole
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.075, 5.8, 10), poleMat)
+            pole.position.set(x, 2.08, z)
+            pole.castShadow = true
+            this.scene.add(pole)
+
+            // Arm
+            const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8), poleMat)
+            arm.rotation.z = Math.PI / 2
+            arm.position.set(x + 0.6, 5.0, z)
+            this.scene.add(arm)
+
+            // Head
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.16, 0.35), headMat)
+            head.position.set(x + 1.2, 4.98, z)
+            this.scene.add(head)
+
+            // Bulb
+            const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), bulbMat)
+            bulb.position.set(x + 1.2, 4.87, z)
+            this.scene.add(bulb)
+
+            // Street light
+            const light = new THREE.PointLight(0xFFE8A0, 1.4, 8.0, 1.6)
+            light.position.set(x + 1.2, 4.7, z)
+            this.scene.add(light)
+        })
+    }
+
+    // ── Git stats billboard (left, outside) ───────────
+    buildGitStatsBillboard() {
+        const POST_X = -10, POST_Z = 14
+
+        // Post
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x282828, roughness: 0.6, metalness: 0.7 })
+        const post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 6.0, 10), poleMat)
+        post1.position.set(POST_X - 1.2, 2.18, POST_Z)
+        this.scene.add(post1)
+        const post2 = post1.clone()
+        post2.position.set(POST_X + 1.2, 2.18, POST_Z)
+        this.scene.add(post2)
+
+        // Cross bar
+        const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.0, 8), poleMat)
+        bar.rotation.z = Math.PI / 2
+        bar.position.set(POST_X, 5.3, POST_Z)
+        this.scene.add(bar)
+
+        // Board backing
+        const backing = new THREE.Mesh(
+            new THREE.BoxGeometry(3.6, 4.8, 0.18),
+            new THREE.MeshStandardMaterial({ color: 0x0A0A0A, roughness: 0.7 })
+        )
+        backing.position.set(POST_X, 2.8, POST_Z)
+        this.scene.add(backing)
+
+        // Rear emissive glow
+        const glow = new THREE.Mesh(
+            new THREE.PlaneGeometry(3.4, 4.6),
+            new THREE.MeshStandardMaterial({ color: 0x002010, emissive: 0x002010, emissiveIntensity: 0.4 })
+        )
+        glow.rotation.y = Math.PI
+        glow.position.set(POST_X, 2.8, POST_Z + 0.1)
+        this.scene.add(glow)
+
+        const tex = this.makeCanvasTexture(720, 960, (ctx, w, h) => {
+            // Background
+            ctx.fillStyle = '#050D08'
+            ctx.fillRect(0, 0, w, h)
+
+            // Grid dots
+            for (let xi = 0; xi < w; xi += 32) {
+                for (let yi = 0; yi < h; yi += 32) {
+                    ctx.beginPath(); ctx.arc(xi, yi, 0.8, 0, Math.PI * 2)
+                    ctx.fillStyle = 'rgba(0,255,136,0.06)'; ctx.fill()
+                }
+            }
+
+            // Header
+            ctx.font = '700 52px Georgia, serif'
+            ctx.fillStyle = '#00FF88'
+            ctx.textAlign = 'center'
+            ctx.shadowColor = 'rgba(0,255,136,0.6)'
+            ctx.shadowBlur = 12
+            ctx.fillText('🐙  GitHub Stats', w / 2, 68)
+            ctx.shadowBlur = 0
+
+            ctx.font = '400 22px monospace'
+            ctx.fillStyle = 'rgba(255,255,255,0.5)'
+            ctx.fillText('github.com/vignesh2027', w / 2, 104)
+
+            ctx.strokeStyle = 'rgba(0,255,136,0.35)'
+            ctx.lineWidth = 1.5
+            ctx.beginPath(); ctx.moveTo(30, 120); ctx.lineTo(w - 30, 120); ctx.stroke()
+
+            // Stats cards
+            ;[
+                { icon: '📦', val: '12+',  label: 'Public Repos',   color: '#FFD080' },
+                { icon: '⭐', val: '45+',  label: 'Stars Earned',   color: '#FFD080' },
+                { icon: '🟢', val: '200+', label: 'Contributions',  color: '#00FF88' },
+                { icon: '⌨',  val: '7',    label: 'Languages',      color: '#80C0FF' },
+            ].forEach(({ icon, val, label, color }, i) => {
+                const col = i % 2, row = Math.floor(i / 2)
+                const cx = 30 + col * 330, cy = 140 + row * 140
+                this.roundRect(ctx, cx, cy, 310, 120, 12)
+                ctx.fillStyle = 'rgba(0,255,136,0.05)'; ctx.fill()
+                ctx.strokeStyle = 'rgba(0,255,136,0.2)'; ctx.lineWidth = 1; ctx.stroke()
+                ctx.font = '34px sans-serif'; ctx.textAlign = 'center'
+                ctx.fillText(icon, cx + 60, cy + 55)
+                ctx.font = '700 36px Georgia'; ctx.fillStyle = color
+                ctx.fillText(val, cx + 180, cy + 55)
+                ctx.font = '400 14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)'
+                ctx.fillText(label, cx + 155, cy + 80)
+            })
+
+            // Language breakdown
+            ctx.font = '600 20px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.8)'
+            ctx.textAlign = 'left'; ctx.fillText('Language Breakdown', 30, 450)
+
+            const langs = [
+                { name: 'Rust',       pct: 35, color: '#FF6B35' },
+                { name: 'Python',     pct: 28, color: '#3776AB' },
+                { name: 'Dart',       pct: 18, color: '#00B4D8' },
+                { name: 'C++',        pct: 12, color: '#00599C' },
+                { name: 'JavaScript', pct:  7, color: '#F7DF1E' },
+            ]
+            langs.forEach(({ name, pct, color }, i) => {
+                const y = 476 + i * 52
+                ctx.fillStyle = 'rgba(255,255,255,0.7)'
+                ctx.font = '400 16px monospace'; ctx.textAlign = 'left'
+                ctx.fillText(name, 30, y + 14)
+                ctx.fillStyle = 'rgba(255,255,255,0.12)'
+                this.roundRect(ctx, 180, y, 480, 22, 4); ctx.fill()
+                ctx.fillStyle = color
+                this.roundRect(ctx, 180, y, 480 * pct / 100, 22, 4); ctx.fill()
+                ctx.fillStyle = 'rgba(255,255,255,0.6)'
+                ctx.font = '400 13px monospace'; ctx.textAlign = 'right'
+                ctx.fillText(pct + '%', w - 30, y + 14)
+            })
+
+            // Contribution heatmap
+            ctx.font = '600 18px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.7)'
+            ctx.textAlign = 'left'; ctx.fillText('Activity Heatmap (last 6 months)', 30, 748)
+            for (let c = 0; c < 52; c++) {
+                for (let r = 0; r < 7; r++) {
+                    const v = Math.random()
+                    const g = 30 + Math.floor(v * 190)
+                    ctx.fillStyle = `rgba(0,${g},${Math.floor(g * 0.5)},${0.2 + v * 0.8})`
+                    this.roundRect(ctx, 30 + c * 12, 764 + r * 12, 10, 10, 2)
+                    ctx.fill()
+                }
+            }
+
+            ctx.font = 'italic 16px sans-serif'; ctx.fillStyle = 'rgba(0,255,136,0.5)'
+            ctx.textAlign = 'center'
+            ctx.fillText('click inside to explore projects →', w / 2, h - 18)
+        })
+
+        const board = new THREE.Mesh(
+            new THREE.PlaneGeometry(3.3, 4.4),
+            new THREE.MeshStandardMaterial({ map: tex, emissive: 0x001008, emissiveIntensity: 0.2, roughness: 0.5 })
+        )
+        board.position.set(POST_X, 2.8, POST_Z - 0.1)
+        board.userData = { action: 'rightWall', label: 'Git Stats' }
+        this.scene.add(board)
+        this.clickTargets.push(board)
+
+        // Billboard light
+        const bLight = new THREE.PointLight(0x00FF88, 0.5, 5, 2)
+        bLight.position.set(POST_X + 1.5, 4.5, POST_Z - 1)
+        this.scene.add(bLight)
+    }
+
+    // ── About me billboard (right, outside) ───────────
+    buildAboutMeBillboard() {
+        const POST_X = 10, POST_Z = 14
+
+        // Posts
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x282828, roughness: 0.6, metalness: 0.7 })
+        ;[-1.2, 1.2].forEach(dx => {
+            const p = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 6.0, 10), poleMat)
+            p.position.set(POST_X + dx, 2.18, POST_Z)
+            this.scene.add(p)
+        })
+        const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 3.0, 8), poleMat)
+        bar.rotation.z = Math.PI / 2
+        bar.position.set(POST_X, 5.3, POST_Z)
+        this.scene.add(bar)
+
+        // Backing
+        const backing = new THREE.Mesh(
+            new THREE.BoxGeometry(3.6, 4.8, 0.18),
+            new THREE.MeshStandardMaterial({ color: 0x0E0A04, roughness: 0.7 })
+        )
+        backing.position.set(POST_X, 2.8, POST_Z)
+        this.scene.add(backing)
+
+        const tex = this.makeCanvasTexture(720, 960, (ctx, w, h) => {
+            const bg = ctx.createLinearGradient(0, 0, 0, h)
+            bg.addColorStop(0, '#1A0A00'); bg.addColorStop(1, '#0A0500')
+            ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h)
+
+            // Avatar circle
+            const av = ctx.createRadialGradient(w / 2, 110, 10, w / 2, 110, 90)
+            av.addColorStop(0, '#F5C040'); av.addColorStop(1, '#8B2500')
+            ctx.beginPath(); ctx.arc(w / 2, 110, 90, 0, Math.PI * 2)
+            ctx.fillStyle = av; ctx.fill()
+            ctx.strokeStyle = '#E8A020'; ctx.lineWidth = 5; ctx.stroke()
+            ctx.font = '700 80px Georgia, serif'; ctx.fillStyle = '#FFFAF3'
+            ctx.textAlign = 'center'; ctx.fillText('V', w / 2, 142)
+
+            // Name
+            ctx.font = '700 54px Georgia, serif'; ctx.fillStyle = '#FFF5E0'
+            ctx.shadowColor = 'rgba(232,160,32,0.6)'; ctx.shadowBlur = 10
+            ctx.fillText('Vignesh S', w / 2, 258)
+            ctx.shadowBlur = 0
+
+            ctx.font = 'italic 22px Georgia'; ctx.fillStyle = '#E8A020'
+            ctx.fillText('CS Student · Builder · Chennai', w / 2, 296)
+
+            // University badge
+            this.roundRect(ctx, 120, 318, w - 240, 52, 26)
+            ctx.fillStyle = 'rgba(232,160,32,0.15)'; ctx.fill()
+            ctx.strokeStyle = 'rgba(232,160,32,0.5)'; ctx.lineWidth = 1.5; ctx.stroke()
+            ctx.font = '600 20px sans-serif'; ctx.fillStyle = '#FFF5E0'
+            ctx.fillText('🎓  Takshashila University  2022–26', w / 2, 350)
+
+            ctx.strokeStyle = 'rgba(232,160,32,0.3)'; ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(40, 386); ctx.lineTo(w - 40, 386); ctx.stroke()
+
+            // Bio
+            const bioL = [
+                'Building systems that matter —',
+                'Rust KV stores · Flutter ICU apps',
+                'RAG pipelines · 3D immersive worlds',
+                '',
+                '7 open source projects shipped',
+                'Systems · AI/ML · Creative Tech',
+            ]
+            ctx.font = '400 19px sans-serif'; ctx.fillStyle = 'rgba(255,245,224,0.78)'
+            bioL.forEach((line, i) => ctx.fillText(line, w / 2, 418 + i * 30))
+
+            ctx.strokeStyle = 'rgba(232,160,32,0.2)'; ctx.lineWidth = 1
+            ctx.beginPath(); ctx.moveTo(40, 608); ctx.lineTo(w - 40, 608); ctx.stroke()
+
+            // Skills tags
+            const skills = ['Rust', 'Python', 'C++', 'Flutter', 'Three.js', 'FastAPI', 'Raft', 'FAISS']
+            skills.forEach((sk, i) => {
+                const col = i % 4, row = Math.floor(i / 4)
+                const bx = 30 + col * 166, by = 624 + row * 56
+                this.roundRect(ctx, bx, by, 148, 40, 6)
+                ctx.fillStyle = 'rgba(232,160,32,0.12)'; ctx.fill()
+                ctx.strokeStyle = 'rgba(232,160,32,0.35)'; ctx.lineWidth = 1; ctx.stroke()
+                ctx.font = '600 16px monospace'; ctx.fillStyle = '#FFF5E0'; ctx.textAlign = 'center'
+                ctx.fillText(sk, bx + 74, by + 26)
+            })
+
+            // Social links
+            ctx.textAlign = 'center'
+            ;[
+                { icon: '🐙', label: 'github.com/vignesh2027', y: 780 },
+                { icon: '💼', label: 'linkedin.com/in/vigneshwar-s', y: 820 },
+                { icon: '📧', label: 'applemacbook6sep2004@gmail.com', y: 860 },
+                { icon: '🌐', label: 'vignesh2027.github.io/portfolio-vignesh', y: 900 },
+            ].forEach(({ icon, label, y }) => {
+                ctx.font = '400 16px monospace'; ctx.fillStyle = 'rgba(232,160,32,0.8)'
+                ctx.fillText(`${icon}  ${label}`, w / 2, y)
+            })
+
+            ctx.font = 'italic 16px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)'
+            ctx.fillText('click to open full profile →', w / 2, h - 18)
+        })
+
+        const board = new THREE.Mesh(
+            new THREE.PlaneGeometry(3.3, 4.4),
+            new THREE.MeshStandardMaterial({ map: tex, emissive: 0x180800, emissiveIntensity: 0.18, roughness: 0.5 })
+        )
+        board.position.set(POST_X, 2.8, POST_Z - 0.1)
+        board.userData = { action: 'about', label: 'About Vignesh' }
+        this.scene.add(board)
+        this.clickTargets.push(board)
+
+        // Billboard light
+        const bLight = new THREE.PointLight(0xFFAA40, 0.5, 5, 2)
+        bLight.position.set(POST_X - 1.5, 4.5, POST_Z - 1)
+        this.scene.add(bLight)
+    }
+
+    // ── Opposite shop / mall ───────────────────────────
+    buildOppositeShop() {
+        const BW = 26     // building half-width
+        const BH = OPP_H  // height above floor
+        const BD = OPP_BACK - OPP_Z  // depth
+
+        // Main structure
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x1A1A2E, roughness: 0.7, metalness: 0.1 })
+        const building = new THREE.Mesh(new THREE.BoxGeometry(BW * 2, BH, BD), wallMat)
+        building.position.set(0, BH / 2 - 0.82, OPP_Z + BD / 2)
+        building.receiveShadow = true
+        this.scene.add(building)
+
+        // Glass facade (ground floor, facing street)
+        const glassFacade = new THREE.Mesh(
+            new THREE.PlaneGeometry(BW * 2 - 2, 4.2),
+            new THREE.MeshStandardMaterial({
+                color: 0x1A3A5C, emissive: 0x0A1A30, emissiveIntensity: 0.4,
+                transparent: true, opacity: 0.75, roughness: 0.05, metalness: 0.2
+            })
+        )
+        glassFacade.position.set(0, 1.28, OPP_Z + 0.01)
+        this.scene.add(glassFacade)
+
+        // Interior glow behind glass
+        const interiorGlow = new THREE.Mesh(
+            new THREE.PlaneGeometry(BW * 2 - 4, 3.8),
+            new THREE.MeshStandardMaterial({ color: 0xFFEECC, emissive: 0xFFDDA0, emissiveIntensity: 0.25 })
+        )
+        interiorGlow.position.set(0, 1.28, OPP_Z + 0.3)
+        this.scene.add(interiorGlow)
+
+        // Window grid — upper 2 floors
+        const windowMat = new THREE.MeshStandardMaterial({
+            color: 0x2040A0, emissive: 0x0A1850, emissiveIntensity: 0.6,
+            transparent: true, opacity: 0.88, roughness: 0.05
+        })
+        const darkWindowMat = new THREE.MeshStandardMaterial({
+            color: 0x0A1020, emissive: 0x050810, emissiveIntensity: 0.1,
+            transparent: true, opacity: 0.9, roughness: 0.1
+        })
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x303040, roughness: 0.6, metalness: 0.5 })
+
+        for (let floor = 0; floor < 2; floor++) {
+            for (let col = 0; col < 8; col++) {
+                const wx = -BW + 2.5 + col * 6.0
+                const wy = 4.2 + floor * 2.2
+                const isLit = Math.random() > 0.3
+                const win = new THREE.Mesh(
+                    new THREE.PlaneGeometry(4.0, 1.8),
+                    (isLit ? windowMat : darkWindowMat).clone()
+                )
+                win.position.set(wx, wy, OPP_Z + 0.05)
+                this.scene.add(win)
+                // Frame
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.95, 0.08), frameMat)
+                frame.position.set(wx, wy, OPP_Z + 0.02)
+                this.scene.add(frame)
+            }
+        }
+
+        // Facade window dividers (glass grid lines)
+        const divMat = new THREE.MeshStandardMaterial({ color: 0x404050, roughness: 0.5, metalness: 0.6 })
+        for (let i = -4; i <= 4; i++) {
+            const v = new THREE.Mesh(new THREE.BoxGeometry(0.06, 4.2, 0.05), divMat)
+            v.position.set(i * 3.0, 1.28, OPP_Z + 0.03)
+            this.scene.add(v)
+        }
+        for (let j = 0; j < 3; j++) {
+            const h = new THREE.Mesh(new THREE.BoxGeometry(BW * 2 - 2, 0.06, 0.05), divMat)
+            h.position.set(0, 0.1 + j * 1.36, OPP_Z + 0.03)
+            this.scene.add(h)
+        }
+
+        // Roof sign board
+        const roofSign = new THREE.Mesh(
+            new THREE.BoxGeometry(BW * 2 - 2, 1.8, 0.35),
+            new THREE.MeshStandardMaterial({ color: 0x0A0A16, roughness: 0.6 })
+        )
+        roofSign.position.set(0, BH - 0.82 + 0.9, OPP_Z + 0.18)
+        this.scene.add(roofSign)
+
+        const signTex = this.makeCanvasTexture(1920, 192, (ctx, w, h) => {
+            ctx.fillStyle = '#05050E'
+            ctx.fillRect(0, 0, w, h)
+            // Neon effect text
+            ctx.font = '700 88px "Georgia", serif'
+            ctx.textAlign = 'center'
+            ctx.shadowColor = '#6060FF'
+            ctx.shadowBlur = 28
+            ctx.fillStyle = '#A0A0FF'
+            ctx.fillText('⚡  CYBER MART  ⚡', w / 2, 128)
+            ctx.shadowBlur = 0
+            ctx.font = '400 28px monospace'
+            ctx.fillStyle = 'rgba(100,100,255,0.55)'
+            ctx.fillText('Tech · Electronics · Innovation · Open 24/7', w / 2, 170)
+        })
+        const signPanel = new THREE.Mesh(
+            new THREE.PlaneGeometry(BW * 2 - 2.5, 1.65),
+            new THREE.MeshStandardMaterial({ map: signTex, emissive: 0x050518, emissiveIntensity: 0.8, roughness: 0.05 })
+        )
+        signPanel.position.set(0, BH - 0.82 + 0.9, OPP_Z + 0.37)
+        this.scene.add(signPanel)
+
+        // Sign neon glow
+        const signLight = new THREE.PointLight(0x6060FF, 1.2, 10, 1.8)
+        signLight.position.set(0, BH - 0.82 + 2, OPP_Z + 1)
+        this.scene.add(signLight)
+
+        // Display windows (ground floor, 4 panels)
+        const displayItems = [
+            { title: 'NEW ARRIVAL', text: 'M4 MacBook Pro\n₹2,49,900', color: '#A0C0FF' },
+            { title: 'BEST SELLER', text: 'RTX 5090 GPU\n₹1,80,000',  color: '#FFD080' },
+            { title: 'TRENDING',    text: 'LLM Dev Kit\n₹49,999',     color: '#80FF88' },
+            { title: 'COMING SOON', text: 'Quantum Kit\nPre-order',   color: '#FF8080' },
+        ]
+        displayItems.forEach(({ title, text, color }, i) => {
+            const dx = -9 + i * 6
+            const dispTex = this.makeCanvasTexture(200, 300, (ctx, w, h) => {
+                ctx.fillStyle = '#080812'
+                ctx.fillRect(0, 0, w, h)
+                ctx.font = '700 18px monospace'; ctx.textAlign = 'center'
+                ctx.fillStyle = color; ctx.fillText(title, w / 2, 40)
+                ctx.strokeStyle = color; ctx.lineWidth = 1
+                ctx.beginPath(); ctx.moveTo(20, 54); ctx.lineTo(w - 20, 54); ctx.stroke()
+                ctx.font = '400 22px sans-serif'; ctx.fillStyle = '#FFFFFF'
+                text.split('\n').forEach((line, li) => {
+                    ctx.fillText(line, w / 2, 100 + li * 34)
+                })
+                // Price tag style
+                ctx.font = '600 14px monospace'; ctx.fillStyle = color
+                ctx.fillText('⟶ tap to explore', w / 2, h - 20)
+            })
+            const disp = new THREE.Mesh(
+                new THREE.PlaneGeometry(4.8, 3.6),
+                new THREE.MeshStandardMaterial({ map: dispTex, emissive: 0x030308, emissiveIntensity: 0.3 })
+            )
+            disp.position.set(dx, 1.5, OPP_Z + 0.35)
+            this.scene.add(disp)
+        })
+
+        // Entry arch
+        const archMat = new THREE.MeshStandardMaterial({ color: 0x2A2A3A, roughness: 0.5, metalness: 0.5 })
+        ;[-1, 1].forEach(side => {
+            const col = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4.4, 0.5), archMat)
+            col.position.set(side * 2.5, 1.38, OPP_Z + 0.26)
+            this.scene.add(col)
+        })
+        const archTop = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.4, 0.5), archMat)
+        archTop.position.set(0, 3.78, OPP_Z + 0.26)
+        this.scene.add(archTop)
+
+        // Floor connection (building floor extending back)
+        const buildFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(BW * 2, BD),
+            new THREE.MeshStandardMaterial({ color: 0x1A1820, roughness: 0.6 })
+        )
+        buildFloor.rotation.x = -Math.PI / 2
+        buildFloor.position.set(0, -0.81, OPP_Z + BD / 2)
+        this.scene.add(buildFloor)
+
+        // Decorative globe/sphere near entrance
+        const globeMat = new THREE.MeshStandardMaterial({
+            color: 0x3040A0, emissive: 0x101850, emissiveIntensity: 0.5,
+            transparent: true, opacity: 0.85, roughness: 0.05, metalness: 0.3
+        })
+        const globe = new THREE.Mesh(new THREE.SphereGeometry(0.8, 20, 16), globeMat)
+        globe.position.set(0, 0.82, OPP_Z + 1.5)
+        this.scene.add(globe)
+
+        // Side buildings (background depth)
+        ;[-1, 1].forEach(side => {
+            const sideB = new THREE.Mesh(
+                new THREE.BoxGeometry(8, 6 + Math.random() * 3, 12),
+                new THREE.MeshStandardMaterial({ color: 0x141420, roughness: 0.8 })
+            )
+            sideB.position.set(side * (BW + 4 + 4), 2.18, OPP_Z + 6)
+            this.scene.add(sideB)
+            // Random lit windows on side buildings
+            for (let wf = 0; wf < 3; wf++) {
+                for (let wc = 0; wc < 3; wc++) {
+                    if (Math.random() > 0.5) {
+                        const sWin = new THREE.Mesh(
+                            new THREE.PlaneGeometry(1.2, 0.8),
+                            new THREE.MeshStandardMaterial({
+                                color: 0x2040A0, emissive: 0x1020A0, emissiveIntensity: 0.6
+                            })
+                        )
+                        sWin.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2
+                        sWin.position.set(side * (BW + 0.1), 1.0 + wf * 1.8, OPP_Z + 2 + wc * 3.5)
+                        this.scene.add(sWin)
+                    }
+                }
+            }
+        })
+    }
+
+    // ── Rain particle system ───────────────────────────
+    buildRain() {
+        const COUNT   = 4000
+        const positions  = new Float32Array(COUNT * 3)
+        const velocities = new Float32Array(COUNT)
+
+        for (let i = 0; i < COUNT; i++) {
+            positions[i * 3]     = (Math.random() - 0.5) * 44
+            positions[i * 3 + 1] = Math.random() * 20 + 3
+            positions[i * 3 + 2] = Math.random() * (STREET_Z + 10) - 5
+            velocities[i]        = 0.12 + Math.random() * 0.1
+        }
+
+        const geo = new THREE.BufferGeometry()
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+        // Elongated raindrop texture
+        const dropTex = this.makeCanvasTexture(8, 24, (ctx, w, h) => {
+            const g = ctx.createLinearGradient(0, 0, 0, h)
+            g.addColorStop(0,   'rgba(160,200,255,0)')
+            g.addColorStop(0.2, 'rgba(180,215,255,0.85)')
+            g.addColorStop(1,   'rgba(140,185,255,0.05)')
+            ctx.fillStyle = g
+            ctx.fillRect(0, 0, w, h)
+        })
+
+        this.rain = new THREE.Points(geo, new THREE.PointsMaterial({
+            map: dropTex,
+            color: 0xBBD8FF,
+            size: 0.16,
+            transparent: true,
+            opacity: 0.55,
+            sizeAttenuation: true,
+            alphaTest: 0.01
+        }))
+        this.rainVelocities = velocities
+        this.rain.position.x = 0
+        this.scene.add(this.rain)
+    }
+
+    // ── Rain sound (Web Audio API, no external files) ──
+    buildRainSound() {
+        const start = () => {
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext
+                if (!AC) return
+                const actx = new AC()
+                // White noise buffer
+                const len = actx.sampleRate * 3
+                const buf = actx.createBuffer(2, len, actx.sampleRate)
+                for (let ch = 0; ch < 2; ch++) {
+                    const d = buf.getChannelData(ch)
+                    for (let i = 0; i < len; i++) {
+                        d[i] = Math.random() * 2 - 1
+                    }
+                }
+                const src = actx.createBufferSource()
+                src.buffer = buf; src.loop = true
+
+                // Bandpass to make it sound rain-like
+                const bp = actx.createBiquadFilter()
+                bp.type = 'bandpass'; bp.frequency.value = 600; bp.Q.value = 0.4
+
+                const hp = actx.createBiquadFilter()
+                hp.type = 'highpass'; hp.frequency.value = 200
+
+                const gain = actx.createGain()
+                gain.gain.value = 0.12
+
+                src.connect(hp); hp.connect(bp); bp.connect(gain); gain.connect(actx.destination)
+                src.start()
+                this.rainGain = gain
+            } catch (e) { /* audio not available */ }
+        }
+        document.addEventListener('click', start, { once: true })
+    }
+
     // ── Update ─────────────────────────────────────────
     update(elapsedTime) {
         // Lantern gentle sway
@@ -1378,6 +2310,30 @@ export default class TeaKadai {
         // Star twinkle
         if (this.stars) {
             this.stars.material.opacity = 0.7 + Math.sin(elapsedTime * 0.35) * 0.1
+        }
+        // Rain animation
+        if (this.rain && this.rainVelocities) {
+            const pos = this.rain.geometry.attributes.position
+            for (let i = 0; i < this.rainVelocities.length; i++) {
+                pos.array[i * 3 + 1] -= this.rainVelocities[i]
+                // Slight wind drift
+                pos.array[i * 3]     += 0.005
+                if (pos.array[i * 3 + 1] < -0.82) {
+                    pos.array[i * 3 + 1] = 18 + Math.random() * 6
+                    pos.array[i * 3]     = (Math.random() - 0.5) * 44
+                }
+            }
+            pos.needsUpdate = true
+        }
+        // TV screen update (every ~0.5s)
+        const tvTick = Math.floor(elapsedTime * 2)
+        if (tvTick !== this.lastTVUpdate) {
+            this.lastTVUpdate = tvTick
+            this.drawTVFrame(elapsedTime)
+        }
+        // TV light gentle flicker
+        if (this.tvLight) {
+            this.tvLight.intensity = 0.28 + Math.sin(elapsedTime * 8.1) * 0.04
         }
     }
 }
